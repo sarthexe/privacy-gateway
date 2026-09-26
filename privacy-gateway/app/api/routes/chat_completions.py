@@ -12,7 +12,10 @@ router = APIRouter(tags=["chat completions"])
     "/chat/completions",
     status_code=501,
     response_model=None,
-    responses={501: {"model": OpenAIErrorResponse}},
+    responses={
+        400: {"model": OpenAIErrorResponse},
+        501: {"model": OpenAIErrorResponse},
+    },
     summary="Create a chat completion",
 )
 async def create_chat_completion(payload: ChatCompletionRequest) -> JSONResponse:

@@ -20,7 +20,9 @@ To stop the services, press Ctrl+C. The named Docker volumes retain local
 PostgreSQL and Redis data between runs. To remove those volumes as well, run
 `docker compose down --volumes`.
 
-Copy `.env.example` to `.env` to adjust local settings. The example database
+Copy `.env.example` to `.env` to adjust local settings. Gateway settings use
+`GATEWAY_`-prefixed names, so they cannot accidentally inherit settings from
+another service in the workspace. The example database
 password is for local development only; replace it before using this setup in
 any shared or hosted environment. Never commit `.env`.
 

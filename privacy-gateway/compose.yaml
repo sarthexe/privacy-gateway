@@ -2,11 +2,11 @@ services:
   api:
     build: .
     environment:
-      APP_NAME: ${APP_NAME:-Privacy Gateway}
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-privacy_gateway}:${POSTGRES_PASSWORD:-change-this-local-password}@postgres:5432/${POSTGRES_DB:-privacy_gateway}
-      REDIS_URL: redis://redis:6379/0
+      GATEWAY_APP_NAME: ${GATEWAY_APP_NAME:-Privacy Gateway}
+      GATEWAY_ENVIRONMENT: ${GATEWAY_ENVIRONMENT:-development}
+      GATEWAY_LOG_LEVEL: ${GATEWAY_LOG_LEVEL:-INFO}
+      GATEWAY_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-privacy_gateway}:${POSTGRES_PASSWORD:-change-this-local-password}@postgres:5432/${POSTGRES_DB:-privacy_gateway}
+      GATEWAY_REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"
     depends_on:

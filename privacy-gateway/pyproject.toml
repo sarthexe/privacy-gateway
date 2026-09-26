@@ -34,6 +34,7 @@ include = ["app*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+pythonpath = ["."]
 testpaths = ["tests"]
 
 [tool.ruff]
@@ -42,6 +43,9 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ASYNC"]
+
+[tool.ruff.lint.isort]
+known-third-party = ["alembic"]
 
 [tool.ruff.format]
 quote-style = "double"

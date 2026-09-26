@@ -1,0 +1,1 @@
+- [Nested Python dependencies](nested-python-dependencies.md) — Python package installation in this pnpm workspace may initialize an unintended root Python project.

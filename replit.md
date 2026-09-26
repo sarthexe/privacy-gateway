@@ -1,45 +1,54 @@
-# [Project name]
+# Privacy Gateway
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A FastAPI foundation for an OpenAI-compatible, privacy-preserving LLM gateway. The current build is intentionally a backend skeleton; PII processing and provider routing are not implemented.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `cd privacy-gateway && docker compose up --build` — run the FastAPI service, PostgreSQL, and Redis
+- `cd privacy-gateway && uv sync --extra dev && uv run pytest` — install Python development dependencies and run its tests
+- `pnpm --filter @workspace/api-server run dev` — run the workspace's existing Express API service
+- `pnpm run typecheck` — typecheck the pnpm workspace
+- Gateway environment: see `privacy-gateway/.env.example`
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Gateway: Python, FastAPI, Pydantic v2 settings
+- Gateway data services: PostgreSQL, Redis, SQLAlchemy async, Alembic
+- Gateway quality: pytest, Ruff, mypy, structlog
+- Workspace scaffold: pnpm, TypeScript, Express, Drizzle ORM
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `privacy-gateway/app/api` — health and OpenAI-compatible endpoint skeletons
+- `privacy-gateway/app/core` — settings and structured logging
+- `privacy-gateway/app/db` — async SQLAlchemy engine and health checks
+- `privacy-gateway/app/{detection,tokenization,vault,policy,routing,reconstruction}` — reserved module boundaries for later phases
+- `privacy-gateway/alembic` — migration environment
+- `privacy-gateway/tests` — API contract and health tests
+- `lib/api-spec/openapi.yaml` — existing workspace OpenAPI contract
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Keep the Python gateway independent from the starter Express service to preserve the requested FastAPI and async SQLAlchemy stack.
+- The chat endpoint validates a minimal OpenAI-style request and returns a clear `501` until a model provider is deliberately added.
+- Request logs contain route metadata only; prompt and response bodies are not logged.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The initial milestone is service scaffolding only: health checks, a request contract, and local PostgreSQL/Redis wiring. It does not process PII or contact an LLM provider.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep the implementation focused on the current milestone; do not add unrelated product features.
+- Use synthetic test data only and do not log raw PII.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run Docker Compose commands from `privacy-gateway/`.
+- The gateway's `/health` endpoint reports `503` until both PostgreSQL and Redis are reachable.
+- `/v1/chat/completions` intentionally returns `501 model_not_configured` until provider routing is implemented.
 
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- See `privacy-gateway/README.md` for Python service setup and the next implementation boundaries

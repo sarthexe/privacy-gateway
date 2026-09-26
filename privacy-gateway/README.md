@@ -1,9 +1,10 @@
 # Privacy Gateway
 
-A small, privacy-first API foundation for an OpenAI-compatible LLM gateway. This
-initial repository provides the service structure and integration points only;
-it does not detect, tokenize, store, or reconstruct PII, and it does not call an
-LLM provider.
+A small, privacy-first API foundation for an OpenAI-compatible LLM gateway. It
+detects PII with Presidio, replaces it with random tokens, stores the mappings
+in an encrypted, tenant-scoped PostgreSQL vault, and reconstructs text from
+those tokens. It does not call an LLM provider yet, and the vault is not yet
+exposed through HTTP endpoints.
 
 ## Run the service
 
@@ -57,6 +58,26 @@ uv run ruff format --check .
 uv run mypy app
 ```
 
+The vault's PostgreSQL tests are skipped unless you point them at a disposable
+database. Its tables are dropped and recreated:
+
+```bash
+GATEWAY_TEST_DATABASE_URL=postgresql+asyncpg://privacy_gateway:change-this-local-password@localhost:5432/vault_test   uv run pytest
+```
+
+Apply database migrations with `uv run alembic upgrade head`.
+
+## Token vault
+
+Token mappings are envelope-encrypted with AES-256-GCM and stored in the
+`vault_entries` table, keyed by tenant and an HMAC of the token. The design,
+threat model, and limitations are in [`docs/vault-security.md`](docs/vault-security.md).
+
+Vault keys are **prototype, development-only** settings (see `.env.example`).
+There are no defaults, and the local key provider refuses to run when
+`GATEWAY_ENVIRONMENT=production`. Production use requires a KMS/HSM-backed
+`KeyProvider`/`TokenHasher`. Never commit key values.
+
 For local development without Docker, first start PostgreSQL and Redis, copy
 `.env.example` to `.env`, then run:
 
@@ -71,15 +92,16 @@ app/
   api/             HTTP routes and request handling
   core/            Settings and structured logging
   db/              Async SQLAlchemy engine and database health check
-  detection/       Future PII detection boundary
-  tokenization/    Future tokenization boundary
-  vault/           Future secure storage boundary
+  detection/       Presidio PII detection
+  tokenization/    Span-based reversible tokenization
+  vault/           Encrypted, tenant-scoped token vault
   policy/          Future policy evaluation boundary
   routing/         Future model-provider routing boundary
-  reconstruction/  Future response reconstruction boundary
+  reconstruction/  Token detection and detokenization
   models/          API schemas and SQLAlchemy base
-alembic/           Database migration configuration
-tests/             API contract and health tests
+alembic/           Database migrations
+docs/              Security design notes
+tests/             API, transformation, and vault security tests
 ```
 
 ## Privacy and scope
@@ -88,5 +110,6 @@ tests/             API contract and health tests
 - Request logs contain only a generated request ID, method, route path, status,
   and duration.
 - No real PII or credentials are included in source or test data.
-- Authentication, PII detection, tokenization, encrypted vault persistence,
-  policy enforcement, provider routing, and detokenization are future work.
+- Vault logs contain only event names, tenant IDs, counts, and key IDs; never
+  values, tokens, token hashes, ciphertext, keys, or SQL parameters.
+- Authentication, policy enforcement, and provider routing are future work.

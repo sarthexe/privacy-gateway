@@ -25,7 +25,7 @@ class EntitySpan(BaseModel):
     entity_type: EntityType
     start: int = Field(ge=0)
     end: int = Field(gt=0)
-    value: str
+    value: str = Field(repr=False)
 
     @model_validator(mode="after")
     def validate_span(self) -> "EntitySpan":
@@ -41,7 +41,7 @@ class TokenMapping(BaseModel):
 
     token: str
     entity_type: EntityType
-    value: str
+    value: str = Field(repr=False)
 
 
 class TokenizationResult(BaseModel):

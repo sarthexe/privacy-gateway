@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +17,13 @@ class Settings(BaseSettings):
         "@localhost:5432/privacy_gateway"
     )
     redis_url: str = "redis://localhost:6379/0"
+
+    # Prototype vault keys. There are deliberately no defaults: the vault refuses
+    # to start without explicitly provided keys. Format: "key_id:base64key,...".
+    vault_master_keys: SecretStr | None = None
+    vault_active_key_id: str | None = None
+    vault_token_hash_key: SecretStr | None = None
+    vault_token_ttl_seconds: int = Field(default=86_400, ge=60, le=30 * 86_400)
 
     model_config = SettingsConfigDict(
         env_prefix="GATEWAY_",

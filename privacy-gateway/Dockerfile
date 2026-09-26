@@ -11,6 +11,7 @@ COPY alembic.ini ./
 COPY alembic ./alembic
 
 RUN pip install --no-cache-dir .
+RUN python -m spacy download en_core_web_sm
 
 EXPOSE 8000
 

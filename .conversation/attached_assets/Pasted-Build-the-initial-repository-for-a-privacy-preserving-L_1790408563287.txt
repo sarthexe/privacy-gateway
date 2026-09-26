@@ -1,0 +1,891 @@
+Build the initial repository for a privacy-preserving LLM gateway.
+
+Goal:
+Create an OpenAI-compatible FastAPI gateway that will eventually:
+
+request
+→ PII detection
+→ tokenization
+→ secure vault
+→ LiteLLM routing
+→ LLM
+→ tokenized response
+→ detokenization
+→ response
+
+For now DO NOT implement the full privacy system.
+
+Set up:
+
+* FastAPI application
+* Pydantic v2 settings
+* PostgreSQL integration
+* Redis integration
+* SQLAlchemy async
+* Alembic
+* pytest
+* Ruff
+* mypy
+* structured logging
+* Docker Compose for Postgres + Redis
+* health endpoint
+* OpenAI-compatible API skeleton at /v1/chat/completions
+
+Create clean module boundaries:
+
+app/api
+app/core
+app/detection
+app/tokenization
+app/vault
+app/policy
+app/routing
+app/reconstruction
+app/models
+app/db
+
+Add .env.example and README.
+
+Do not add unnecessary frontend functionality yet.
+Do not use real PII.
+Use synthetic test data only.
+
+Make the application runnable with one documented command.
+
+````
+
+Don't let Replit build 40 features.
+
+You want the **skeleton**.
+
+---
+
+# Phase 1 — Tokenization engine
+
+### Use: **Codex**
+
+This is the first real engineering phase.
+
+Build:
+
+```text
+Input
+  ↓
+PII detection
+  ↓
+Entities
+  ↓
+Token generation
+  ↓
+Token mapping
+  ↓
+Tokenized text
+````
+
+Example:
+
+```text
+My name is John Smith and email is john@example.com
+```
+
+becomes:
+
+```text
+My name is <PII_PERSON:abc123>
+and email is <PII_EMAIL:def456>
+```
+
+Create interfaces before implementations:
+
+```python
+class PIIDetector(Protocol):
+    async def detect(self, text: str) -> list[Entity]:
+        ...
+
+
+class Tokenizer(Protocol):
+    async def tokenize(
+        self,
+        text: str,
+        entities: list[Entity]
+    ) -> TokenizedText:
+        ...
+```
+
+### Give Codex this job
+
+Implement Phase 1 of the privacy gateway.
+
+Scope ONLY:
+
+1. PII detection abstraction
+2. Presidio-based detector implementation
+3. Entity model
+4. Token model
+5. Token generation
+6. Tokenized text representation
+7. Reconstruction/detokenization abstraction
+8. Unit tests
+
+Supported initial entity types:
+
+* PERSON
+* EMAIL
+* PHONE_NUMBER
+* CREDIT_CARD
+* IP_ADDRESS
+* DATE_TIME
+* LOCATION
+
+Requirements:
+
+* deterministic behavior within a request/session
+* unique token IDs
+* token format must be machine parseable
+* no raw PII in logs
+* preserve original text offsets correctly
+* support multiple identical entities
+* support repeated occurrences of the same entity
+* never mutate the original input
+* write comprehensive unit tests
+
+Do not implement LiteLLM yet.
+Do not implement PostgreSQL persistence yet.
+Do not implement authentication yet.
+
+At the end, provide:
+
+* files changed
+* architecture decisions
+* edge cases handled
+* tests added
+
+````
+
+This phase is **pure logic**.
+
+That matters.
+
+---
+
+# Phase 2 — Secure vault
+
+### Use: **Claude Code**
+
+This is where I'd spend Claude.
+
+Because now you're crossing into:
+
+```text
+PII
++
+encryption
++
+persistent storage
++
+tenant isolation
+````
+
+You want a second, stronger reasoning pass rather than blindly generating CRUD.
+
+The architecture should become:
+
+```text
+Token
+  ↓
+Vault
+  ↓
+Encrypted value
+```
+
+Database roughly:
+
+```text
+token_mapping
+-------------------------
+id
+tenant_id
+token_id
+entity_type
+ciphertext
+nonce
+created_at
+expires_at
+```
+
+Do **not** store:
+
+```text
+token_id → plaintext PII
+```
+
+Store:
+
+```text
+token_id → encrypted PII
+```
+
+### Claude's task
+
+Ask Claude Code to **design/review first**, not immediately code everything.
+
+Review the existing privacy gateway repository and design the secure vault layer.
+
+The system is a privacy-preserving LLM gateway:
+
+request
+→ PII detection
+→ tokenization
+→ vault
+→ LiteLLM
+→ model
+→ reconstruction
+
+Design the vault with these goals:
+
+* encrypted sensitive values at rest
+* tenant isolation
+* least-privilege access
+* no plaintext PII in application logs
+* secure token lookup
+* explicit authorization before detokenization
+* support token expiration
+* prevent token enumeration
+* avoid storing unnecessary sensitive metadata
+
+Use PostgreSQL + SQLAlchemy.
+
+Use authenticated encryption such as AES-GCM for the prototype.
+
+Before modifying code:
+
+1. inspect the repository
+2. identify security risks
+3. propose the vault architecture
+4. explain key-management boundaries
+5. explain what must never be logged
+6. identify attack paths
+
+Then implement the vault.
+
+Add security-focused tests, including:
+
+* cross-tenant access
+* invalid token lookup
+* expired token
+* unauthorized detokenization
+* ciphertext integrity failure
+* repeated token lookup
+
+````
+
+### Important
+
+For the portfolio project, don't pretend you've built an enterprise HSM/KMS system.
+
+Call the first version:
+
+> application-level encrypted vault
+
+Then later you can add AWS KMS / GCP KMS / Azure Key Vault abstraction.
+
+---
+
+# Phase 3 — LiteLLM gateway
+
+### Use: **Codex**
+
+Now we finally connect the LLM.
+
+Flow:
+
+```text
+POST /v1/chat/completions
+
+        ↓
+
+PII Detector
+
+        ↓
+
+Tokenizer
+
+        ↓
+
+Vault
+
+        ↓
+
+Tokenized messages
+
+        ↓
+
+LiteLLM
+
+        ↓
+
+Model
+
+        ↓
+
+Tokenized response
+
+        ↓
+
+Reconstruction
+
+        ↓
+
+Original response
+````
+
+Codex should implement the plumbing.
+
+### Prompt
+
+Implement the LLM proxy pipeline.
+
+Endpoint:
+
+POST /v1/chat/completions
+
+The pipeline must be:
+
+1. authenticate request
+2. extract chat messages
+3. detect PII
+4. tokenize sensitive entities
+5. persist token mappings in the vault
+6. send ONLY tokenized content to LiteLLM
+7. receive model response
+8. detect token references in the response
+9. authorize reconstruction
+10. detokenize
+11. return an OpenAI-compatible response
+
+Requirements:
+
+* use LiteLLM for provider routing
+* preserve OpenAI-compatible request/response structure
+* support system/user/assistant messages
+* preserve token identity across a request
+* never send original PII to the LLM provider
+* never log raw prompt/response content
+* add integration tests proving that the outbound LLM request contains tokens rather than PII
+
+Create a fake/mock LLM provider for tests.
+
+Do not add UI.
+Do not add billing.
+Do not add unnecessary provider-specific code.
+
+````
+
+---
+
+# Phase 4 — Policy engine
+
+### Use: **Claude Code → Codex**
+
+This is another place Claude earns its money.
+
+Because this is no longer just:
+
+```text
+if EMAIL: tokenize
+````
+
+You want policies.
+
+For example:
+
+```yaml
+EMAIL:
+  action: TOKENIZE
+
+PHONE_NUMBER:
+  action: TOKENIZE
+
+CREDIT_CARD:
+  action: BLOCK
+
+PERSON:
+  action: TOKENIZE
+
+IP_ADDRESS:
+  action: REDACT
+```
+
+Then potentially:
+
+```text
+tenant
+   ↓
+policy
+   ↓
+entity
+   ↓
+action
+```
+
+Actions:
+
+```text
+ALLOW
+TOKENIZE
+REDACT
+MASK
+HASH
+BLOCK
+```
+
+Ask Claude to define the model and threat boundary.
+
+Then give Codex the actual implementation.
+
+---
+
+# Phase 5 — Multi-tenancy + authentication
+
+### Use: **Codex**
+
+This is mostly engineering.
+
+Build:
+
+```text
+API Key
+   ↓
+Tenant
+   ↓
+Policy
+   ↓
+Vault
+```
+
+Every vault record:
+
+```text
+tenant_id
+```
+
+Every operation should be tenant-scoped.
+
+You should be able to demonstrate:
+
+```text
+Tenant A
+ ├── token_123
+ └── token_456
+
+Tenant B
+ ├── token_789
+ └── token_999
+```
+
+and prove:
+
+```text
+Tenant A ❌ cannot detokenize Tenant B tokens
+```
+
+This should have automated tests.
+
+---
+
+# Phase 6 — Observability + security
+
+### Use: **Claude Code**
+
+This is where I would make Claude behave like your **security engineer**.
+
+Ask it to perform an actual threat model.
+
+Think:
+
+```text
+What happens if:
+- attacker steals an API key?
+- attacker gets a token?
+- attacker gets DB access?
+- model fabricates token IDs?
+- model modifies tokens?
+- model tries prompt injection?
+- token is replayed?
+- tenant ID is manipulated?
+- response contains a token belonging to another tenant?
+- logging accidentally captures PII?
+```
+
+The most important test here:
+
+### Prove your core security claim.
+
+You want an experiment like:
+
+```text
+Original prompt
+----------------
+My SSN is 123-45-6789
+
+
+Outbound provider request
+-------------------------
+My SSN is <PII_SSN:abc123>
+```
+
+and then:
+
+```text
+Provider request contains raw PII? FALSE
+```
+
+That becomes one of the strongest parts of your README.
+
+---
+
+# Phase 7 — Developer experience
+
+### Use: **Replit**
+
+Now Replit becomes useful again.
+
+Build a small dashboard:
+
+```text
+Privacy Gateway
+────────────────────────────
+
+Requests             12,843
+
+PII detections       4,129
+
+Tokenized            4,002
+
+Blocked              127
+
+Providers
+OpenAI               61%
+Claude               25%
+Gemini               14%
+```
+
+Then a request inspector:
+
+```text
+Original
+────────────────────────
+My email is john@gmail.com
+
+
+Sanitized
+────────────────────────
+My email is <PII_EMAIL:9af1>
+
+
+Provider
+────────────────────────
+Claude
+
+
+Final
+────────────────────────
+My email is john@gmail.com
+```
+
+**Do not display the actual raw PII in a dashboard unless you explicitly need to demonstrate reconstruction.**
+
+For a demo, synthetic values are perfect.
+
+---
+
+# Phase 8 — Benchmarking
+
+### Use: **Codex**
+
+This is where your previous benchmarking experience becomes useful.
+
+Measure:
+
+```text
+Metric                         Baseline     Gateway
+----------------------------------------------------
+Latency
+Tokenization latency
+Vault latency
+LLM latency
+Detokenization latency
+Total overhead
+Requests/sec
+PII detection precision
+PII detection recall
+Token reconstruction accuracy
+```
+
+Especially:
+
+```text
+LLM without gateway
+        vs
+LLM with gateway
+```
+
+You want to be able to say something concrete like:
+
+```text
+Gateway overhead:
+p50 = X ms
+p95 = Y ms
+```
+
+rather than:
+
+> "It is fast."
+
+---
+
+# Phase 9 — Final security review
+
+### Use: **Claude Code**
+
+At the end, give Claude the whole repo and tell it:
+
+> Assume you're reviewing this for a security-conscious enterprise customer.
+
+Have it inspect:
+
+```text
+authentication
+authorization
+vault
+encryption
+logging
+token generation
+token parsing
+prompt injection
+tenant isolation
+API security
+dependency risks
+secret handling
+Docker configuration
+```
+
+Then let **Codex fix the issues Claude finds**.
+
+That creates a nice loop:
+
+```text
+Claude
+   ↓
+Find problems
+   ↓
+Codex
+   ↓
+Fix
+   ↓
+Claude
+   ↓
+Review again
+```
+
+---
+
+# How I would spend your credits
+
+This is the important bit.
+
+### Replit credits
+
+Use them on things where seeing the result quickly matters:
+
+```text
+20%  project bootstrap
+20%  API integration
+30%  demo dashboard
+20%  deployment
+10%  quick experimentation
+```
+
+Do **not** burn Replit credits asking it to repeatedly rewrite your architecture.
+
+---
+
+### Claude Code $30
+
+Use Claude for the expensive thinking:
+
+```text
+Phase 2   Vault security
+Phase 4   Policy architecture
+Phase 6   Threat model
+Phase 9   Final security review
+```
+
+Basically:
+
+> **Claude = architect + security reviewer**
+
+Not:
+
+> Claude = write every CRUD endpoint.
+
+---
+
+### Codex Go
+
+Use Codex as the workhorse:
+
+```text
+Phase 1   Tokenization
+Phase 3   LiteLLM pipeline
+Phase 5   Auth + multi-tenancy
+Phase 8   Benchmarks
+Bug fixing
+Tests
+Refactors
+Migrations
+```
+
+Basically:
+
+> **Codex = senior implementation engineer**
+
+---
+
+# The development loop I'd personally use
+
+For every major phase:
+
+```text
+           ┌──────────────┐
+           │ Claude Code  │
+           │ Design/Review│
+           └──────┬───────┘
+                  ↓
+           ┌──────────────┐
+           │    Codex     │
+           │ Implement    │
+           └──────┬───────┘
+                  ↓
+           ┌──────────────┐
+           │    Tests     │
+           └──────┬───────┘
+                  ↓
+           ┌──────────────┐
+           │ Claude Code  │
+           │ Review       │
+           └──────────────┘
+```
+
+And use **Replit mainly for the visible product**.
+
+---
+
+# What I would NOT build initially
+
+Seriously, don't let the agents drag you into this:
+
+```text
+❌ billing
+❌ enterprise SSO
+❌ Kubernetes
+❌ 20 LLM providers
+❌ fancy frontend
+❌ SDKs for 5 languages
+❌ distributed vault
+❌ HSM integration
+❌ organization hierarchy
+❌ complicated RBAC
+❌ SOC2 automation
+```
+
+Your **V1** should be:
+
+```text
+FastAPI
+   ↓
+PII detector
+   ↓
+Tokenizer
+   ↓
+Encrypted Postgres vault
+   ↓
+LiteLLM
+   ↓
+LLM
+   ↓
+Detokenizer
+   ↓
+OpenAI-compatible response
+```
+
+with:
+
+```text
+Authentication
+Tenant isolation
+Policy engine
+Audit logging
+Tests
+Benchmark
+```
+
+That's already a serious project.
+
+---
+
+# Your first 3 milestones
+
+Don't think about all nine phases yet.
+
+### Milestone 1
+
+```text
+Text
+ ↓
+PII detection
+ ↓
+Tokenization
+ ↓
+Detokenization
+```
+
+**Codex**
+
+### Milestone 2
+
+```text
+Token
+ ↓
+Encrypted vault
+ ↓
+Tenant isolation
+```
+
+**Claude → Codex**
+
+### Milestone 3
+
+```text
+OpenAI-compatible request
+ ↓
+Tokenize
+ ↓
+LiteLLM
+ ↓
+LLM
+ ↓
+Detokenize
+ ↓
+Response
+```
+
+**Codex**
+
+Once those three work, **you officially have the core of the product**.
+
+And I would keep a very strict rule throughout the build:
+
+> **Every agent gets a narrowly defined task and must not redesign unrelated parts of the repository.**
+
+Otherwise three AI coding agents will happily turn one architecture into three competing architectures.

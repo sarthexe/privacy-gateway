@@ -1,0 +1,1 @@
+"""Secure vault boundary; implementation is intentionally deferred."""

@@ -1,0 +1,1 @@
+"""PII detection boundary; implementation is intentionally deferred."""

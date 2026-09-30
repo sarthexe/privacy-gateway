@@ -29,6 +29,22 @@ dev = [
   "pytest>=8.3,<9",
   "pytest-asyncio>=0.24,<2",
   "ruff>=0.8,<1",
+  "nervaluate>=1.2,<2",
+]
+# Offline dataset preparation and baseline evaluation (scripts/); never needed by
+# the gateway runtime image.
+evaluation = [
+  "datasets>=3,<6",
+  "nervaluate>=1.2,<2",
+  "pyyaml>=6,<7",
+]
+# Offline GLiNER-PII benchmark (scripts/gliner_*.py) on top of `evaluation`.
+# Install a CUDA build of torch first from the PyTorch index; never needed by the
+# gateway runtime image.
+gliner-evaluation = [
+  "gliner>=0.2.29,<0.3",
+  "psutil>=5.9,<8",
+  "pyarrow>=15",
 ]
 
 [tool.setuptools.packages.find]

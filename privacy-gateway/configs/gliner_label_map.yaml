@@ -1,0 +1,72 @@
+# GLiNER-PII prompt labels -> Privacy Gateway entity types (offline benchmark only).
+#
+# nvidia/gliner-PII is prompted with label names; it can only return labels it is
+# given.  Its model card names nvidia/Nemotron-PII as the training set and uses the
+# native Nemotron label names (email, phone_number, user_name, ...), so the prompt
+# vocabulary below is exactly the 55 Nemotron-PII labels, in a fixed order.
+#
+# Every target is explicit.  Because the benchmark ground truth was normalized with
+# configs/pii_ontology.yaml, a GLiNER label with the same name must map to the same
+# gateway type, otherwise the comparison with Presidio would not be like-for-like.
+# The loader rejects any divergence that is not listed under `deviations` with a
+# reason.  UNMAPPED predictions are never scored as a gateway type; they are
+# counted as "removed by ontology filtering" and kept for native-label coverage.
+model_id: nvidia/gliner-PII
+model_revision: bd23e8ef4425fd04e34c5204ab49ffaa706eae79
+deviations: {}
+labels:
+  account_number: BANK_ACCOUNT
+  age: UNMAPPED
+  api_key: UNMAPPED
+  bank_routing_number: BANK_ACCOUNT
+  biometric_identifier: UNMAPPED
+  blood_type: UNMAPPED
+  certificate_license_number: UNMAPPED
+  city: LOCATION
+  company_name: ORGANIZATION
+  coordinate: LOCATION
+  country: LOCATION
+  county: LOCATION
+  credit_debit_card: CREDIT_CARD
+  customer_id: ID_CARD
+  cvv: CREDIT_CARD
+  date: DATE
+  date_of_birth: DATE
+  date_time: DATE
+  device_identifier: UNMAPPED
+  education_level: UNMAPPED
+  email: EMAIL_ADDRESS
+  employee_id: ID_CARD
+  employment_status: UNMAPPED
+  fax_number: PHONE_NUMBER
+  first_name: PERSON
+  gender: UNMAPPED
+  health_plan_beneficiary_number: SOCIAL_IDENTIFIER
+  http_cookie: UNMAPPED
+  ipv4: IP_ADDRESS
+  ipv6: IP_ADDRESS
+  language: UNMAPPED
+  last_name: PERSON
+  license_plate: UNMAPPED
+  mac_address: UNMAPPED
+  medical_record_number: SOCIAL_IDENTIFIER
+  national_id: ID_CARD
+  occupation: UNMAPPED
+  password: UNMAPPED
+  phone_number: PHONE_NUMBER
+  pin: UNMAPPED
+  political_view: UNMAPPED
+  postcode: ADDRESS
+  race_ethnicity: UNMAPPED
+  religious_belief: UNMAPPED
+  sexuality: UNMAPPED
+  ssn: SOCIAL_IDENTIFIER
+  state: LOCATION
+  street_address: ADDRESS
+  swift_bic: BANK_ACCOUNT
+  tax_id: SOCIAL_IDENTIFIER
+  time: TIME
+  unique_id: UNMAPPED
+  url: UNMAPPED
+  user_name: USERNAME
+  vehicle_identifier: UNMAPPED

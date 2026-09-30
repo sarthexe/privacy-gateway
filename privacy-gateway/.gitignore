@@ -10,3 +10,10 @@ htmlcov/
 dist/
 build/
 *.egg-info/
+
+# Dataset artifacts are intentionally external to this repository.  The scripts
+# use the Hugging Face cache by default and require an external output directory.
+data/raw/
+data/processed/
+*.parquet
+*.jsonl

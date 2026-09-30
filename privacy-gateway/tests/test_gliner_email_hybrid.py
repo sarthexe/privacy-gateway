@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from scripts.gliner_email_hybrid import hybrid_predictions, recognize_email_addresses
+from scripts.evaluation_checkpoint import EvaluationState
+from scripts.gliner_email_hybrid import _flush_scores, hybrid_predictions, recognize_email_addresses
 from scripts.gliner_evaluation import GlinerLabelMap, RawPrediction
+from scripts.presidio_evaluation import ExactMatch
 
 
 LABEL_MAP = GlinerLabelMap(
@@ -67,3 +69,21 @@ def test_partial_overlap_is_not_suppressed_and_exact_predictions_are_deduplicate
         ("first_name", 0, len(text), 0.9),
     ]
     assert duplicates == 2
+
+
+def test_flush_scores_adapts_exact_matches_to_score_batch_tuple_api() -> None:
+    original, hybrid = EvaluationState(), EvaluationState()
+    pending = [
+        (
+            0,
+            (ExactMatch("EMAIL_ADDRESS", 0, 8),),
+            (ExactMatch("EMAIL_ADDRESS", 0, 8),),
+            (ExactMatch("EMAIL_ADDRESS", 0, 8),),
+        )
+    ]
+
+    _flush_scores(original, hybrid, pending, reached_eof=True)
+
+    assert pending == []
+    assert original.aggregate() == {"tp": 1, "fp": 0, "fn": 0}
+    assert hybrid.aggregate() == {"tp": 1, "fp": 0, "fn": 0}

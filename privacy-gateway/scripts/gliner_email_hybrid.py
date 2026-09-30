@@ -112,6 +112,11 @@ def _gateway_prediction(
     return tuple(to_gateway(record.predictions, label_map).kept)
 
 
+def _as_score_entities(entities: Iterable[ExactMatch]) -> tuple[tuple[str, int, int], ...]:
+    """Adapt privacy-safe matches to the tuple API expected by ``score_batch``."""
+    return tuple((entity.entity_type, entity.start, entity.end) for entity in entities)
+
+
 def _flush_scores(
     original: EvaluationState,
     hybrid: EvaluationState,
@@ -123,8 +128,16 @@ def _flush_scores(
     if not pending:
         return
     batch = Batch([(index, b"") for index, _, _, _ in pending], 0, reached_eof)
-    score_batch(original, batch, [(truth, old) for _, truth, old, _ in pending])
-    score_batch(hybrid, batch, [(truth, new) for _, truth, _, new in pending])
+    score_batch(
+        original,
+        batch,
+        [(_as_score_entities(truth), _as_score_entities(old)) for _, truth, old, _ in pending],
+    )
+    score_batch(
+        hybrid,
+        batch,
+        [(_as_score_entities(truth), _as_score_entities(new)) for _, truth, _, new in pending],
+    )
     pending.clear()
 
 

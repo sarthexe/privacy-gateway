@@ -4,6 +4,7 @@ import pytest
 
 from scripts.gliner_evaluation import GlinerLabelMap
 from scripts.ood_pii import OodNormalizationError, normalize
+from scripts.prepare_ood_pii import format_normalization_error
 
 
 MODEL = GlinerLabelMap(
@@ -34,3 +35,14 @@ def test_argilla_uses_pii_suggestion_offsets_and_unmaps_unknown_labels() -> None
 def test_ai4privacy_fails_closed_when_span_value_disagrees() -> None:
     with pytest.raises(OodNormalizationError, match="does not match"):
         normalize("ai4privacy", {"source_text": "abc", "privacy_mask": [{"value": "z", "start": 0, "end": 1}]}, 0, "train", MODEL)
+
+
+def test_normalization_error_message_has_safe_dataset_split_and_index_context() -> None:
+    message = format_normalization_error(
+        "ai4privacy", "validation", 12, OodNormalizationError("offsets are outside text")
+    )
+    assert message == (
+        "error: normalization failed dataset=ai4privacy split=validation "
+        "example_index=12: offsets are outside text"
+    )
+    assert "source_text" not in message and "value" not in message

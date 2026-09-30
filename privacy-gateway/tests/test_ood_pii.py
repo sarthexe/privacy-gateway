@@ -21,10 +21,43 @@ def test_ai4privacy_uses_verified_character_offsets_and_language() -> None:
 
 
 def test_gretel_reconstructs_only_a_unique_exact_value_and_maps_label() -> None:
-    normalized = normalize("gretel", {"text": "Call 555-0100", "entities": [{"entity": "555-0100", "types": ["phone_number"]}]}, 0, "test", MODEL)
+    normalized = normalize(
+        "gretel",
+        {
+            "text": "Call 555-0100",
+            "entities": "[{'entity': '555-0100', 'types': ['phone_number']}]",
+        },
+        0,
+        "test",
+        MODEL,
+    )
     assert normalized["entities"] == [{"type": "PHONE_NUMBER", "start": 5, "end": 13}]
+
+
+def test_gretel_rejects_malformed_or_non_list_serialized_entities() -> None:
+    with pytest.raises(OodNormalizationError, match="serialized entities are invalid"):
+        normalize("gretel", {"text": "a", "entities": "not a list"}, 0, "test", MODEL)
+    with pytest.raises(OodNormalizationError, match="entities must be a list"):
+        normalize("gretel", {"text": "a", "entities": "{'entity': 'a'}"}, 0, "test", MODEL)
+
+
+def test_gretel_fails_closed_for_repeated_or_absent_entity_value() -> None:
     with pytest.raises(OodNormalizationError, match="uniquely"):
-        normalize("gretel", {"text": "x x", "entities": [{"entity": "x", "types": ["first_name"]}]}, 0, "test", MODEL)
+        normalize(
+            "gretel",
+            {"text": "x x", "entities": "[{'entity': 'x', 'types': ['first_name']}]"},
+            0,
+            "test",
+            MODEL,
+        )
+    with pytest.raises(OodNormalizationError, match="uniquely"):
+        normalize(
+            "gretel",
+            {"text": "present", "entities": "[{'entity': 'absent', 'types': ['first_name']}]"},
+            0,
+            "test",
+            MODEL,
+        )
 
 
 def test_argilla_uses_pii_suggestion_offsets_and_unmaps_unknown_labels() -> None:

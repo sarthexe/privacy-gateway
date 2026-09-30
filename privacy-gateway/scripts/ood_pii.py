@@ -7,6 +7,7 @@ written outside the source-text record.
 
 from __future__ import annotations
 
+import ast
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -136,11 +137,20 @@ def normalize_ai4privacy(record: Mapping[str, Any], index: int, split: str, mode
 
 def normalize_gretel(record: Mapping[str, Any], index: int, split: str, model: GlinerLabelMap) -> dict[str, Any]:
     text, items = record.get("text"), record.get("entities")
-    if not isinstance(text, str) or not isinstance(items, list):
+    if not isinstance(text, str):
         raise OodNormalizationError("Gretel requires text and entities")
+    if isinstance(items, str):
+        try:
+            items = ast.literal_eval(items)
+        except (SyntaxError, ValueError) as error:
+            raise OodNormalizationError("Gretel serialized entities are invalid") from error
+    if not isinstance(items, list):
+        raise OodNormalizationError("Gretel entities must be a list")
+    if not all(isinstance(item, Mapping) for item in items):
+        raise OodNormalizationError("Gretel entities must contain mappings")
     entities = []
     for item in items:
-        if not isinstance(item, Mapping) or not isinstance(item.get("types"), list):
+        if not isinstance(item.get("types"), list):
             raise OodNormalizationError("Gretel entity item is invalid")
         start, end = _unique_offset(text, item.get("entity"))
         types = item["types"]

@@ -1,0 +1,596 @@
+{
+  "complete_split": true,
+  "dataset": "nvidia/Nemotron-PII",
+  "evaluation_type_map": {
+    "DATE": "DATE_TIME",
+    "TIME": "DATE_TIME"
+  },
+  "exact_matches": 266880,
+  "examples_evaluated": 100000,
+  "examples_with_pii": 99999,
+  "false_negative_groups": {
+    "span_mismatch": 96267,
+    "supported_direct": 97639,
+    "unmapped_source_label": 203906,
+    "unsupported_entity": 185648
+  },
+  "false_negative_samples": [
+    {
+      "end": 54,
+      "entity_type": "ADDRESS",
+      "example_index": 0,
+      "failure_group": "unsupported_entity",
+      "start": 38
+    },
+    {
+      "end": 176,
+      "entity_type": "BANK_ACCOUNT",
+      "example_index": 0,
+      "failure_group": "unsupported_entity",
+      "start": 167
+    },
+    {
+      "end": 219,
+      "entity_type": "CREDIT_CARD",
+      "example_index": 0,
+      "failure_group": "supported_direct",
+      "start": 200
+    },
+    {
+      "end": 89,
+      "entity_type": "USERNAME",
+      "example_index": 1,
+      "failure_group": "unsupported_entity",
+      "start": 82
+    },
+    {
+      "end": 119,
+      "entity_type": "BANK_ACCOUNT",
+      "example_index": 1,
+      "failure_group": "unsupported_entity",
+      "start": 111
+    },
+    {
+      "end": 203,
+      "entity_type": "CREDIT_CARD",
+      "example_index": 1,
+      "failure_group": "supported_direct",
+      "start": 186
+    },
+    {
+      "end": 92,
+      "entity_type": "PERSON",
+      "example_index": 2,
+      "failure_group": "supported_direct",
+      "start": 85
+    },
+    {
+      "end": 131,
+      "entity_type": "ADDRESS",
+      "example_index": 2,
+      "failure_group": "unsupported_entity",
+      "start": 110
+    },
+    {
+      "end": 154,
+      "entity_type": "UNMAPPED",
+      "example_index": 2,
+      "failure_group": "unmapped_source_label",
+      "start": 149
+    },
+    {
+      "end": 351,
+      "entity_type": "ADDRESS",
+      "example_index": 2,
+      "failure_group": "unsupported_entity",
+      "start": 330
+    },
+    {
+      "end": 389,
+      "entity_type": "UNMAPPED",
+      "example_index": 2,
+      "failure_group": "unmapped_source_label",
+      "start": 384
+    },
+    {
+      "end": 67,
+      "entity_type": "PERSON",
+      "example_index": 3,
+      "failure_group": "supported_direct",
+      "start": 62
+    },
+    {
+      "end": 156,
+      "entity_type": "ADDRESS",
+      "example_index": 3,
+      "failure_group": "unsupported_entity",
+      "start": 141
+    },
+    {
+      "end": 208,
+      "entity_type": "SOCIAL_IDENTIFIER",
+      "example_index": 3,
+      "failure_group": "unsupported_entity",
+      "start": 195
+    },
+    {
+      "end": 47,
+      "entity_type": "PERSON",
+      "example_index": 4,
+      "failure_group": "supported_direct",
+      "start": 41
+    },
+    {
+      "end": 134,
+      "entity_type": "UNMAPPED",
+      "example_index": 4,
+      "failure_group": "unmapped_source_label",
+      "start": 127
+    },
+    {
+      "end": 181,
+      "entity_type": "DATE_TIME",
+      "example_index": 4,
+      "failure_group": "supported_direct",
+      "start": 173
+    },
+    {
+      "end": 210,
+      "entity_type": "DATE_TIME",
+      "example_index": 4,
+      "failure_group": "supported_direct",
+      "start": 202
+    },
+    {
+      "end": 433,
+      "entity_type": "UNMAPPED",
+      "example_index": 4,
+      "failure_group": "unmapped_source_label",
+      "start": 416
+    },
+    {
+      "end": 538,
+      "entity_type": "UNMAPPED",
+      "example_index": 4,
+      "failure_group": "unmapped_source_label",
+      "start": 507
+    },
+    {
+      "end": 77,
+      "entity_type": "PERSON",
+      "example_index": 5,
+      "failure_group": "span_mismatch",
+      "start": 69
+    },
+    {
+      "end": 115,
+      "entity_type": "SOCIAL_IDENTIFIER",
+      "example_index": 5,
+      "failure_group": "unsupported_entity",
+      "start": 104
+    },
+    {
+      "end": 125,
+      "entity_type": "UNMAPPED",
+      "example_index": 5,
+      "failure_group": "unmapped_source_label",
+      "start": 123
+    },
+    {
+      "end": 209,
+      "entity_type": "BANK_ACCOUNT",
+      "example_index": 5,
+      "failure_group": "unsupported_entity",
+      "start": 196
+    },
+    {
+      "end": 41,
+      "entity_type": "PERSON",
+      "example_index": 6,
+      "failure_group": "span_mismatch",
+      "start": 37
+    }
+  ],
+  "false_positive_groups": {
+    "detector_recognizer": 255062,
+    "span_mismatch": 56588
+  },
+  "false_positive_samples": [
+    {
+      "end": 54,
+      "entity_type": "DATE_TIME",
+      "example_index": 0,
+      "failure_group": "detector_recognizer",
+      "start": 52
+    },
+    {
+      "end": 176,
+      "entity_type": "DATE_TIME",
+      "example_index": 0,
+      "failure_group": "detector_recognizer",
+      "start": 167
+    },
+    {
+      "end": 219,
+      "entity_type": "DATE_TIME",
+      "example_index": 0,
+      "failure_group": "detector_recognizer",
+      "start": 200
+    },
+    {
+      "end": 89,
+      "entity_type": "PERSON",
+      "example_index": 1,
+      "failure_group": "detector_recognizer",
+      "start": 82
+    },
+    {
+      "end": 119,
+      "entity_type": "DATE_TIME",
+      "example_index": 1,
+      "failure_group": "detector_recognizer",
+      "start": 111
+    },
+    {
+      "end": 203,
+      "entity_type": "DATE_TIME",
+      "example_index": 1,
+      "failure_group": "detector_recognizer",
+      "start": 186
+    },
+    {
+      "end": 374,
+      "entity_type": "DATE_TIME",
+      "example_index": 2,
+      "failure_group": "detector_recognizer",
+      "start": 356
+    },
+    {
+      "end": 47,
+      "entity_type": "LOCATION",
+      "example_index": 4,
+      "failure_group": "detector_recognizer",
+      "start": 41
+    },
+    {
+      "end": 422,
+      "entity_type": "DATE_TIME",
+      "example_index": 4,
+      "failure_group": "detector_recognizer",
+      "start": 416
+    },
+    {
+      "end": 102,
+      "entity_type": "PERSON",
+      "example_index": 5,
+      "failure_group": "span_mismatch",
+      "start": 69
+    },
+    {
+      "end": 209,
+      "entity_type": "PHONE_NUMBER",
+      "example_index": 5,
+      "failure_group": "detector_recognizer",
+      "start": 196
+    },
+    {
+      "end": 404,
+      "entity_type": "LOCATION",
+      "example_index": 5,
+      "failure_group": "detector_recognizer",
+      "start": 394
+    },
+    {
+      "end": 552,
+      "entity_type": "PERSON",
+      "example_index": 5,
+      "failure_group": "detector_recognizer",
+      "start": 547
+    },
+    {
+      "end": 48,
+      "entity_type": "PERSON",
+      "example_index": 6,
+      "failure_group": "span_mismatch",
+      "start": 37
+    },
+    {
+      "end": 122,
+      "entity_type": "PERSON",
+      "example_index": 6,
+      "failure_group": "span_mismatch",
+      "start": 111
+    },
+    {
+      "end": 160,
+      "entity_type": "DATE_TIME",
+      "example_index": 7,
+      "failure_group": "detector_recognizer",
+      "start": 156
+    },
+    {
+      "end": 215,
+      "entity_type": "PHONE_NUMBER",
+      "example_index": 7,
+      "failure_group": "detector_recognizer",
+      "start": 205
+    },
+    {
+      "end": 346,
+      "entity_type": "PERSON",
+      "example_index": 8,
+      "failure_group": "detector_recognizer",
+      "start": 334
+    },
+    {
+      "end": 381,
+      "entity_type": "DATE_TIME",
+      "example_index": 8,
+      "failure_group": "detector_recognizer",
+      "start": 375
+    },
+    {
+      "end": 262,
+      "entity_type": "PERSON",
+      "example_index": 9,
+      "failure_group": "detector_recognizer",
+      "start": 248
+    },
+    {
+      "end": 262,
+      "entity_type": "PHONE_NUMBER",
+      "example_index": 9,
+      "failure_group": "detector_recognizer",
+      "start": 252
+    },
+    {
+      "end": 136,
+      "entity_type": "PERSON",
+      "example_index": 10,
+      "failure_group": "detector_recognizer",
+      "start": 119
+    },
+    {
+      "end": 153,
+      "entity_type": "PERSON",
+      "example_index": 10,
+      "failure_group": "detector_recognizer",
+      "start": 139
+    },
+    {
+      "end": 371,
+      "entity_type": "PERSON",
+      "example_index": 10,
+      "failure_group": "detector_recognizer",
+      "start": 365
+    },
+    {
+      "end": 493,
+      "entity_type": "DATE_TIME",
+      "example_index": 10,
+      "failure_group": "detector_recognizer",
+      "start": 484
+    }
+  ],
+  "ground_truth_entities": 850340,
+  "harness": "nervaluate strict",
+  "harness_cross_check": {
+    "nervaluate_strict_detector_order": 266496,
+    "nervaluate_strict_exact_first": 266880
+  },
+  "limit": null,
+  "matching": "exact entity type and half-open offsets",
+  "overall": {
+    "exact_matches": 266880,
+    "f1": 0.3735539272292091,
+    "false_negatives": 583460,
+    "false_positives": 311650,
+    "precision": 0.4613071059409192,
+    "predictions": 578530,
+    "recall": 0.31385093021614885,
+    "support": 850340
+  },
+  "per_entity": {
+    "ADDRESS": {
+      "exact_matches": 0,
+      "f1": 0.0,
+      "false_negatives": 23158,
+      "false_positives": 0,
+      "precision": 0.0,
+      "predictions": 0,
+      "recall": 0.0,
+      "support": 23158
+    },
+    "BANK_ACCOUNT": {
+      "exact_matches": 0,
+      "f1": 0.0,
+      "false_negatives": 30606,
+      "false_positives": 0,
+      "precision": 0.0,
+      "predictions": 0,
+      "recall": 0.0,
+      "support": 30606
+    },
+    "CREDIT_CARD": {
+      "exact_matches": 1520,
+      "f1": 0.15447939427816454,
+      "false_negatives": 16190,
+      "false_positives": 449,
+      "precision": 0.7719654647028948,
+      "predictions": 1969,
+      "recall": 0.08582721626199886,
+      "support": 17710
+    },
+    "DATE_TIME": {
+      "exact_matches": 107439,
+      "f1": 0.563219987575914,
+      "false_negatives": 22234,
+      "false_positives": 144405,
+      "precision": 0.42660932958498116,
+      "predictions": 251844,
+      "recall": 0.828537937735689,
+      "support": 129673
+    },
+    "EMAIL_ADDRESS": {
+      "exact_matches": 53461,
+      "f1": 0.9939020989421629,
+      "false_negatives": 469,
+      "false_positives": 187,
+      "precision": 0.9965143155383239,
+      "predictions": 53648,
+      "recall": 0.9913035416280364,
+      "support": 53930
+    },
+    "ID_CARD": {
+      "exact_matches": 0,
+      "f1": 0.0,
+      "false_negatives": 32227,
+      "false_positives": 0,
+      "precision": 0.0,
+      "predictions": 0,
+      "recall": 0.0,
+      "support": 32227
+    },
+    "IP_ADDRESS": {
+      "exact_matches": 8921,
+      "f1": 0.8340111251343898,
+      "false_negatives": 296,
+      "false_positives": 3255,
+      "precision": 0.7326708278580815,
+      "predictions": 12176,
+      "recall": 0.9678854290984051,
+      "support": 9217
+    },
+    "LOCATION": {
+      "exact_matches": 47193,
+      "f1": 0.6383686720097392,
+      "false_negatives": 29071,
+      "false_positives": 24398,
+      "precision": 0.6592029724406699,
+      "predictions": 71591,
+      "recall": 0.6188109724116228,
+      "support": 76264
+    },
+    "ORGANIZATION": {
+      "exact_matches": 0,
+      "f1": 0.0,
+      "false_negatives": 54837,
+      "false_positives": 0,
+      "precision": 0.0,
+      "predictions": 0,
+      "recall": 0.0,
+      "support": 54837
+    },
+    "PERSON": {
+      "exact_matches": 19784,
+      "f1": 0.14558352251194862,
+      "false_negatives": 123855,
+      "false_positives": 108366,
+      "precision": 0.1543815840811549,
+      "predictions": 128150,
+      "recall": 0.13773418082832656,
+      "support": 143639
+    },
+    "PHONE_NUMBER": {
+      "exact_matches": 28562,
+      "f1": 0.6382213284174069,
+      "false_negatives": 1791,
+      "false_positives": 30590,
+      "precision": 0.4828577224776846,
+      "predictions": 59152,
+      "recall": 0.9409943003986426,
+      "support": 30353
+    },
+    "SOCIAL_IDENTIFIER": {
+      "exact_matches": 0,
+      "f1": 0.0,
+      "false_negatives": 29020,
+      "false_positives": 0,
+      "precision": 0.0,
+      "predictions": 0,
+      "recall": 0.0,
+      "support": 29020
+    },
+    "UNMAPPED": {
+      "exact_matches": 0,
+      "f1": 0.0,
+      "false_negatives": 203906,
+      "false_positives": 0,
+      "precision": 0.0,
+      "predictions": 0,
+      "recall": 0.0,
+      "support": 203906
+    },
+    "USERNAME": {
+      "exact_matches": 0,
+      "f1": 0.0,
+      "false_negatives": 15800,
+      "false_positives": 0,
+      "precision": 0.0,
+      "predictions": 0,
+      "recall": 0.0,
+      "support": 15800
+    }
+  },
+  "predictions": 578530,
+  "run": {
+    "dataset_sha256": "52c89435c888740d2be5bab6c0221761ae7b5b178f0c007342d14a2449ad99d4",
+    "detector": {
+      "class": "app.detection.PresidioPIIDetector",
+      "nlp_models": {
+        "en": "en_core_web_sm==3.8.0"
+      },
+      "presidio_analyzer": "2.2.364",
+      "recognizers": [
+        "CreditCardRecognizer:CREDIT_CARD",
+        "CryptoRecognizer:CRYPTO",
+        "DateRecognizer:DATE_TIME",
+        "EmailRecognizer:EMAIL_ADDRESS",
+        "IbanRecognizer:IBAN_CODE",
+        "IpRecognizer:IP_ADDRESS",
+        "MacAddressRecognizer:MAC_ADDRESS",
+        "MedicalLicenseRecognizer:MEDICAL_LICENSE",
+        "NhsRecognizer:UK_NHS",
+        "PhoneRecognizer:PHONE_NUMBER",
+        "SpacyRecognizer:AGE|DATE_TIME|EMAIL|ID|LOCATION|NRP|ORGANIZATION|PERSON|PHONE_NUMBER",
+        "UrlRecognizer:URL",
+        "UsBankRecognizer:US_BANK_NUMBER",
+        "UsItinRecognizer:US_ITIN",
+        "UsLicenseRecognizer:US_DRIVER_LICENSE",
+        "UsPassportRecognizer:US_PASSPORT",
+        "UsSsnRecognizer:US_SSN"
+      ],
+      "source_sha256": "1082c778b5321e0a1c64490998ab8380544c6cc79cd8381c728bf769497fae8a",
+      "spacy": "3.8.16",
+      "supported_entities": [
+        "CREDIT_CARD",
+        "DATE_TIME",
+        "EMAIL_ADDRESS",
+        "IP_ADDRESS",
+        "LOCATION",
+        "PERSON",
+        "PHONE_NUMBER"
+      ]
+    },
+    "elapsed_seconds": 477.4,
+    "examples_per_second": 209.5,
+    "identity_sha256": "d7303591959d3fab6e63e2941db34a343fbd155a5135d55e5ec87fa67b3e661c",
+    "sessions": [
+      {
+        "batch_size": 1000,
+        "elapsed_seconds": 5.567,
+        "examples": 1000,
+        "resumed_from": 0,
+        "workers": 8
+      },
+      {
+        "batch_size": 1000,
+        "elapsed_seconds": 471.841,
+        "examples": 99000,
+        "resumed_from": 1000,
+        "workers": 8
+      }
+    ]
+  },
+  "split": "test"
+}

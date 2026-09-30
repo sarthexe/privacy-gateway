@@ -1,0 +1,7 @@
+[
+  {"text": "Person A emailed example1@example.test.", "spans": [{"start": 0, "end": 8, "label": "first_name"}, {"start": 17, "end": 38, "label": "email"}]},
+  {"text": "Call 555-0100 at 08:30.", "spans": [{"start": 5, "end": 13, "label": "phone_number"}, {"start": 17, "end": 22, "label": "time"}]},
+  {"text": "The reference is X-123.", "spans": [{"start": 17, "end": 22, "label": "future_label"}]},
+  {"text": "Synthetic record without entities.", "spans": []},
+  {"text": "Organization Q is in Area Z.", "spans": [{"start": 0, "end": 14, "label": "company_name"}, {"start": 21, "end": 27, "label": "city"}]}
+]

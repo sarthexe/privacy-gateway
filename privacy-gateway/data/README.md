@@ -63,3 +63,43 @@ python scripts/evaluate_presidio.py --data-dir /path/to/nemotron-normalized --wo
 - Worker count and batch size may change between sessions; they do not affect
   metrics.  A pilot checkpoint can be resumed without `--limit` to extend it to
   the full split.
+
+## GLiNER-PII baseline evaluation
+
+Benchmarks the pretrained `nvidia/gliner-PII` (pinned revision in
+`configs/gliner_label_map.yaml`) on the same normalized `test.jsonl` with the same
+strict scoring as the Presidio baseline.  Nothing is trained or fine-tuned, and the
+gateway runtime is untouched.  Use a separate environment: install a CUDA build of
+`torch` from the PyTorch index, then `pip install -e ".[dev,evaluation,gliner-evaluation]"`.
+Model weights stay in the Hugging Face cache.
+
+Inference and scoring are separate steps.  `gliner_predict.py` writes an external,
+append-only predictions file (example index, native label, offsets, score; never
+text or values) plus a `.runtime.json` log, and resumes with `--resume`.
+`evaluate_gliner.py` reads the normalized split, the cached raw parquet (native
+labels, uid, document format), and the predictions in lockstep, verifies they
+describe the same records, and scores them through the existing harness.
+
+```bash
+D=/path/to/nemotron-normalized
+# 1. Inference-configuration pilot (device / dtype / batch size) on dev records only.
+python scripts/gliner_benchmark.py --data-dir $D --output $D/gliner/benchmark.json \
+  --records 64 --configs cuda:fp32:4 cuda:fp16:4 cpu:fp32:4
+# 2. Threshold selection on a deterministic 2,000-record subset of TRAIN (never test).
+python scripts/gliner_predict.py --data-dir $D --source dev --threshold 0.2 \
+  --dtype fp16 --batch-size 4 --output $D/gliner/dev_t0.2.jsonl
+python scripts/select_gliner_threshold.py --data-dir $D \
+  --predictions $D/gliner/dev_t0.2.jsonl --output $D/gliner/threshold_selection.json
+# 3. Test split once at the selected threshold: 1,000-example pilot, then resume.
+python scripts/gliner_predict.py --data-dir $D --source test --threshold T \
+  --dtype fp16 --batch-size 4 --output $D/gliner/test.jsonl --limit 1000
+python scripts/gliner_predict.py --data-dir $D --source test --threshold T \
+  --dtype fp16 --batch-size 4 --output $D/gliner/test.jsonl --resume
+# 4. Reports (aggregate only) and the Presidio comparison.
+python scripts/evaluate_gliner.py --data-dir $D --predictions $D/gliner/test.jsonl \
+  --selection $D/gliner/threshold_selection.json
+python scripts/compare_pii_models.py
+```
+
+GLiNER-PII was trained on the Nemotron-PII train split, so the development subset
+is in-sample for the model; its scores are only used to rank thresholds.

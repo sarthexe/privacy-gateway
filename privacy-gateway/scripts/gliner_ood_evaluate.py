@@ -33,11 +33,16 @@ def _native(record: dict[str, Any]) -> tuple[tuple[str, int, int], ...]:
     if not isinstance(rows, list): raise ValueError("native entities are invalid")
     return tuple((str(x["native_label"]), int(x["start"]), int(x["end"])) for x in rows if x["native_label"] != "UNMAPPED")
 
+def _load_normalized_records(normalized: Path) -> list[dict[str, Any]]:
+    """Read physical JSONL lines without splitting Unicode separators in text."""
+    with normalized.open("r", encoding="utf-8", newline="\n") as handle:
+        return [json.loads(line) for line in handle if line.strip()]
+
 def run(normalized: Path, output_dir: Path, device: str) -> None:
     if is_within_repository(output_dir): raise ValueError("output directory must be outside repository")
     label_map = load_label_map()
     if label_map.model_revision != MODEL_REVISION: raise ValueError("label map model revision differs from OOD protocol")
-    rows = [json.loads(line) for line in normalized.read_text(encoding="utf-8").splitlines()]
+    rows = _load_normalized_records(normalized)
     model, _ = load_model(label_map, device, "fp32", max_width=24)
     identity_base = {"normalized_sha256": sha256_file(normalized), "model": describe_model(model, label_map, "fp32"), "protocol": {"max_width": 24, "batch_size": 1, "thresholds": list(THRESHOLDS), "email_hybrid": "not_run"}}
     for threshold in THRESHOLDS:

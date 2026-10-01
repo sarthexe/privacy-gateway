@@ -65,9 +65,18 @@ def test_argilla_uses_pii_suggestion_offsets_and_unmaps_unknown_labels() -> None
     assert normalized["entities"] == [{"type": "PERSON", "start": 0, "end": 3}, {"type": "IP_ADDRESS", "start": 4, "end": 11}, {"type": "UNMAPPED", "start": 0, "end": 3}]
 
 
-def test_ai4privacy_fails_closed_when_span_value_disagrees() -> None:
-    with pytest.raises(OodNormalizationError, match="does not match"):
-        normalize("ai4privacy", {"source_text": "abc", "privacy_mask": [{"value": "z", "start": 0, "end": 1}]}, 0, "train", MODEL)
+def test_ai4privacy_accepts_authoritative_offsets_when_value_disagrees() -> None:
+    normalized = normalize(
+        "ai4privacy",
+        {
+            "source_text": "abc",
+            "privacy_mask": [{"value": "z", "start": 0, "end": 1, "label": "EMAIL"}],
+        },
+        0,
+        "train",
+        MODEL,
+    )
+    assert normalized["entities"] == [{"type": "EMAIL_ADDRESS", "start": 0, "end": 1}]
 
 
 def test_normalization_error_message_has_safe_dataset_split_and_index_context() -> None:

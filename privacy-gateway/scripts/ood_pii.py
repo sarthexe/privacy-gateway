@@ -130,7 +130,9 @@ def normalize_ai4privacy(record: Mapping[str, Any], index: int, split: str, mode
     for span in spans:
         if not isinstance(span, Mapping):
             raise OodNormalizationError("AI4Privacy privacy_mask item is invalid")
-        start, end = _offset(span.get("value"), text, span.get("start"), span.get("end"))
+        # AI4Privacy's published offsets are authoritative. Its ``value`` field
+        # can disagree with the source slice, so it is not a validation input.
+        start, end = _offset(None, text, span.get("start"), span.get("end"))
         entities.append(_entity(span.get("label"), start, end, AI4PRIVACY_LABELS, model))
     return _record(index, text, entities, DATASETS["ai4privacy"], split, record.get("language"))
 

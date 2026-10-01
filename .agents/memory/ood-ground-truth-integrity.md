@@ -1,0 +1,10 @@
+---
+name: OOD ground-truth integrity
+description: Evaluation decisions for inconsistent public-dataset metadata and invalid annotations.
+---
+
+Treat public benchmark annotation boundaries and labels as immutable ground truth. AI4Privacy value metadata is not authoritative when it disagrees with the source slice. Invalid offsets or labels must not be clipped, reconstructed, repaired, or silently removed.
+
+**Why:** The user explicitly confirmed that accepting authoritative valid offsets while ignoring inconsistent value metadata is correct. Repairing invalid spans or retaining only an example's valid spans would change the benchmark ground truth and make evaluation results misleading.
+
+**How to apply:** Keep normalization fail-closed by default. Any permitted exclusion must be an explicit opt-in that removes the whole example, preserves original source indices for retained examples, and records source-independent reasons and verifiable counts/hashes. Never include source text or entity values in exclusion audits.

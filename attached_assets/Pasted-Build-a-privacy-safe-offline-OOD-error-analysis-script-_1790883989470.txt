@@ -1,0 +1,53 @@
+Build a privacy-safe offline OOD error-analysis script for the existing GLiNER benchmark outputs.
+
+Create:
+
+privacy-gateway/scripts/analyze_gliner_ood_errors.py
+
+The script must consume:
+
+a normalized OOD JSONL file containing text, entities, and native_entities
+a GLiNER prediction JSONL produced by gliner_ood_evaluate.py
+the existing pinned label map and evaluation helpers
+
+Do not run GLiNER inference.
+
+Reuse the existing strict exact-match semantics and existing gateway ontology mapping. Do not reimplement a different scorer.
+
+For every dataset/threshold, produce an aggregate-only JSON report containing:
+
+Overall TP/FP/FN.
+Per gateway entity-type TP/FP/FN/precision/recall/F1.
+False-negative failure groups:
+span_mismatch when a same-type prediction overlaps the ground-truth span but is not an exact match.
+detector_miss when no same-type overlapping prediction exists.
+unmapped_source_label / unsupported_entity where applicable using the existing adapter_category.
+False-positive failure groups:
+span_mismatch when a same-type ground-truth span overlaps the prediction.
+detector_recognizer when no same-type ground-truth overlap exists.
+Detect and count likely type-confusion cases where a prediction overlaps a ground-truth span but the predicted gateway type differs from the ground-truth type.
+For span mismatches, aggregate structural boundary patterns without exposing text or entity values:
+prediction starts before GT
+prediction starts after GT
+prediction ends before GT
+prediction ends after GT
+prediction contains GT
+GT contains prediction
+Report counts by entity type and failure category.
+Report how many ground-truth entities are UNMAPPED.
+Verify prediction record count matches the normalized dataset record count.
+Never write source text, entity values, or snippets to the report.
+
+Add unit tests covering:
+
+exact TP
+same-type span mismatch
+detector miss
+false positive
+type confusion
+UNMAPPED ground truth
+containment/boundary categories
+
+Run the targeted tests and full pytest suite.
+
+Do not modify the model, thresholds, ontology mappings, scorer behavior, inference code, or existing benchmark outputs.

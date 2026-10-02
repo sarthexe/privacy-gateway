@@ -1,0 +1,21 @@
+{
+  "batch_size": 1,
+  "dataset": "ai4privacy",
+  "dtype": "fp32",
+  "email_hybrid": "not_run",
+  "gpu": "Tesla T4",
+  "gpu_memory_gib": 14.56,
+  "max_width": 24,
+  "model_id": "nvidia/gliner-PII",
+  "model_revision": "bd23e8ef4425fd04e34c5204ab49ffaa706eae79",
+  "normalized_rows": 47725,
+  "normalized_sha256": "575c7105a3ad5d27cbea7a467bebc360b08edfcdebadd71a45d5962a12472fca",
+  "ontology_sha256": "08043d9906cd4141b60e4fb88cbd62890a5214094edfbd3567f87b44c09ab809",
+  "repository_branch": "phase-1.5-pii-evaluation",
+  "required_code_commit": "36914c154198fedd7930a2fb8dce2dca33822326",
+  "split": "validation",
+  "thresholds": [
+    0.3,
+    0.7
+  ]
+}

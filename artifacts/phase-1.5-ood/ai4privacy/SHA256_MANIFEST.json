@@ -1,0 +1,30 @@
+{
+  "artifacts/phase-1.5-ood/ai4privacy/REPRODUCIBILITY.json": {
+    "bytes": 657,
+    "sha256": "8314227a39ba4ae8441964e3b99423170340805fd37dd705d4bf7b505c7c5151"
+  },
+  "artifacts/phase-1.5-ood/ai4privacy/errors_t0.3.json": {
+    "bytes": 14113,
+    "sha256": "7f91ac07ad9019389f5a9e2973e332549db9fb5696333256764da0f89fd39a43"
+  },
+  "artifacts/phase-1.5-ood/ai4privacy/errors_t0.7.json": {
+    "bytes": 13925,
+    "sha256": "efdf75a9818271bc1b023e8caf24ea9d1ad687748ca3ef283d2b3093e8160a51"
+  },
+  "artifacts/phase-1.5-ood/ai4privacy/gliner_ood_t0.3.json": {
+    "bytes": 44311,
+    "sha256": "5b32f787162edef9cc0bc89632185967953ff2494529a293b7ae18db260bfa64"
+  },
+  "artifacts/phase-1.5-ood/ai4privacy/gliner_ood_t0.3.jsonl.gz": {
+    "bytes": 5548457,
+    "sha256": "be77cf1e2fa562ffb732cf9f89aca3f8fedd7125eb75523d9db0e5de68152e11"
+  },
+  "artifacts/phase-1.5-ood/ai4privacy/gliner_ood_t0.7.json": {
+    "bytes": 44260,
+    "sha256": "11623eaf9e23ea9e9bfdb888232eb30e6ea51611b8f08946f681a8bcd2711864"
+  },
+  "artifacts/phase-1.5-ood/ai4privacy/gliner_ood_t0.7.jsonl.gz": {
+    "bytes": 4179510,
+    "sha256": "d13a1f6def3a7eb260725ea99abb11d851ee0bd8ed5b2ab9d65179faae58147c"
+  }
+}

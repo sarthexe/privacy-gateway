@@ -8,3 +8,11 @@ Treat public benchmark annotation boundaries and labels as immutable ground trut
 **Why:** The user explicitly confirmed that accepting authoritative valid offsets while ignoring inconsistent value metadata is correct. Repairing invalid spans or retaining only an example's valid spans would change the benchmark ground truth and make evaluation results misleading.
 
 **How to apply:** Keep normalization fail-closed by default. Any permitted exclusion must be an explicit opt-in that removes the whole example, preserves original source indices for retained examples, and records source-independent reasons and verifiable counts/hashes. Never include source text or entity values in exclusion audits.
+
+## Ontology fingerprint representations
+
+OOD benchmark reproducibility records use the SHA256 of the ontology YAML file bytes. Normalization metadata uses the SHA256 of the canonical JSON label mapping. These are different fingerprints even though both fields are named `ontology_sha256`.
+
+**Why:** Comparing the two representations directly produces a false ontology-mismatch diagnosis even when the ontology is unchanged.
+
+**How to apply:** Verify benchmark fingerprints against raw file bytes and normalization fingerprints against the canonical mapping. Never edit the ontology to make these two different fingerprints equal.

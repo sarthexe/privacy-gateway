@@ -1,0 +1,161 @@
+We need to restore the three normalized OOD JSONL datasets that were intentionally not persisted during the original Kaggle run.
+
+This is a DATASET RECONSTRUCTION task only.
+
+DO NOT run GLiNER inference.
+DO NOT run evaluation.
+DO NOT modify model configuration, thresholds, max_width, prediction artifacts, or existing benchmark results.
+
+Goal:
+Recreate the exact normalized JSONL files used by the original OOD GLiNER benchmark and verify them against the hashes recorded during that benchmark.
+
+Datasets and exact expected outputs:
+
+1. AI4Privacy
+Source:
+- dataset: ai4privacy/pii-masking-300k
+- split: validation
+- original normalization command:
+  python scripts/prepare_ood_pii.py --dataset ai4privacy --split validation --output-dir <output-dir> --skip-invalid
+
+Expected:
+- source rows: 47,728
+- normalized rows: 47,725
+- skipped rows: 3
+- normalized SHA256:
+  575c7105a3ad5d27cbea7a467bebc360b08edfcdebadd71a45d5962a12472fca
+
+2. Gretel
+Source:
+- dataset: gretelai/gretel-pii-masking-en-v1
+- split: test
+- original normalization command:
+  python scripts/prepare_ood_pii.py --dataset gretel --split test --output-dir <output-dir>
+
+Expected:
+- normalized rows: 5,000
+- normalized SHA256:
+  2b628ffc09effc56475300038c648252a5faf9eb4f8877c9221ef31e5ca727f9
+
+3. Argilla
+Source:
+- dataset: argilla/textcat-tokencat-pii-per-domain
+- split: train
+- original normalization command:
+  python scripts/prepare_ood_pii.py --dataset argilla --split train --output-dir <output-dir>
+
+Expected:
+- normalized rows: 2,096
+- normalized SHA256:
+  551e98472d8c0df3e5ec1590f0b62960d3be667eadf65518715fd534ee6cf
+
+Important:
+Use the repository's existing `prepare_ood_pii.py` and adapters. Do NOT write a new normalization implementation unless the existing script is broken.
+
+Also verify the ontology SHA256 against:
+08043d9906cd4141b60e4fb88cbd62890a5214094edfbd3567f87b44c09ab809
+
+Checkpoint requirements:
+
+CHECKPOINT 1/4 — Reconstruction setup
+Report:
+- current branch and commit
+- exact source dataset revisions/config currently referenced by the repository
+- expected output paths
+- expected hashes
+- whether the required dataset files/scripts are available
+
+Then start reconstruction.
+
+For each dataset:
+
+CHECKPOINT — AI4Privacy reconstruction started
+Report start time.
+
+After completion:
+CHECKPOINT — AI4Privacy reconstruction complete
+Report:
+- row count
+- skipped count if applicable
+- actual SHA256
+- expected SHA256
+- PASS/FAIL
+- elapsed time
+
+Repeat the same for Gretel and Argilla.
+
+During any long download/normalization:
+- report meaningful progress
+- include X/Y where measurable
+- include elapsed time
+- provide ETA only after enough measured runtime exists
+- never invent an ETA
+
+CHECKPOINT 2/4 — All datasets reconstructed
+
+At this checkpoint provide a table:
+
+Dataset | Rows | Expected SHA256 | Actual SHA256 | Hash match | Elapsed
+
+Then verify every reconstructed file independently.
+
+Verification requirements:
+- SHA256 exact match
+- expected row count
+- valid JSONL
+- every line parses
+- required normalized fields exist
+- no unexpected modification of repository benchmark artifacts
+- ontology hash matches the expected ontology SHA256
+
+CHECKPOINT 3/4 — Integrity verification complete
+
+Then run the UPDATED offline analyzer against the reconstructed datasets and the already-persisted predictions.
+
+Use the existing prediction artifacts only.
+DO NOT regenerate predictions.
+
+Run all six conditions:
+- AI4Privacy t=0.3
+- AI4Privacy t=0.7
+- Gretel t=0.3
+- Gretel t=0.7
+- Argilla t=0.3
+- Argilla t=0.7
+
+For each analyzer run report:
+- command
+- elapsed time
+- completion status
+- full_strict F1
+- gateway_supported_only_strict F1
+- gateway_supported_gt_pct
+
+Then compare the newly generated analyzer results with the previously saved benchmark/error reports.
+
+The purpose is to independently validate the newly added supported-only metrics against the exact original normalized datasets.
+
+CHECKPOINT 4/4 — Analyzer reruns complete
+
+Final response must contain:
+
+1. Reconstruction table with row counts and hashes.
+2. Exact file paths of the three normalized JSONL files.
+3. Confirmation that every hash matches.
+4. Exact analyzer commands run.
+5. Full vs gateway-supported-only results for all six conditions.
+6. Any differences from the previously reported results.
+7. Confirmation that:
+   - no GLiNER inference was run
+   - no prediction artifact was regenerated
+   - no threshold/max_width/model configuration was changed
+   - no existing benchmark artifact was overwritten
+8. Total elapsed time.
+
+Persistence:
+Do NOT commit the normalized datasets to Git automatically.
+
+After successfully reconstructing them, place them in a clearly documented temporary/output directory and report the exact paths.
+
+If the files are small enough for repository policy and there is already an established dataset-artifact convention, report that possibility separately, but do not upload or commit them without explicit approval.
+High

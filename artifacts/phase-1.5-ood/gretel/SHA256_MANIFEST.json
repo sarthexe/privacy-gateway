@@ -1,0 +1,30 @@
+{
+  "artifacts/phase-1.5-ood/gretel/REPRODUCIBILITY.json": {
+    "bytes": 646,
+    "sha256": "e996038da2451c09527ea62eb83e9faa972c0ff22a81e8b25bbeeb6e25cf5309"
+  },
+  "artifacts/phase-1.5-ood/gretel/errors_t0.3.json": {
+    "bytes": 14527,
+    "sha256": "aefbd4993314713c91315206d2d763eeec27529cea145c2e16c6813c2015d104"
+  },
+  "artifacts/phase-1.5-ood/gretel/errors_t0.7.json": {
+    "bytes": 14236,
+    "sha256": "7c4f74d41ba5228b13e828b310a0f9e33672fc7786d655cf7533756a4dcd00ce"
+  },
+  "artifacts/phase-1.5-ood/gretel/gliner_ood_t0.3.json": {
+    "bytes": 24257,
+    "sha256": "6837fbe7be60588129e86e4e049fc8097a5219a6e9c41deb7a6167be224faedb"
+  },
+  "artifacts/phase-1.5-ood/gretel/gliner_ood_t0.3.jsonl.gz": {
+    "bytes": 355003,
+    "sha256": "655b8f6034b2b4150cbd3f9b5171b7c1b80026b190a746d06d9b15fb9134073c"
+  },
+  "artifacts/phase-1.5-ood/gretel/gliner_ood_t0.7.json": {
+    "bytes": 24217,
+    "sha256": "5106e3267f7574f96a68b96aeeaeeeec60f073ec193ca60aee1d6536fa27c804"
+  },
+  "artifacts/phase-1.5-ood/gretel/gliner_ood_t0.7.jsonl.gz": {
+    "bytes": 304841,
+    "sha256": "53c5b8b40ff121c1648ff2765142ac247ecf0162ca754287c70c08f5aa5912da"
+  }
+}

@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "P_CoSW_TSEDzPRF9xbEnr"
+uri = "file://attached_assets/phase15_ood_diagnostic_report.json"
+type = "unspecified"
+title = "Phase 1.5 OOD diagnostic report"
+description = "Aggregate-derived full and gateway-supported-only metrics for all six conditions, ontology coverage, complete per-type metrics and error diagnostics. Normalized GT is missing; these are not fresh analyzer runs."
+logical_id = "a19e1540-0aec-46ea-8627-2ffbcff685d5"
+content_hash = "sha256:f0166e50dd013e3f4b653e3c9825ddc69989fd9af6110b9c8e34652ba683d643"
+size = 119391
+mtime_ms = 1790960868786
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/a19e1540-0aec-46ea-8627-2ffbcff685d5/9adff3db-e4c7-4a72-be06-719679a8e6e2"
+storage_version_token = "1790960870533109"
+content_type = "application/octet-stream"

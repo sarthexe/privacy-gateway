@@ -1,0 +1,107 @@
+Now that the supported-only OOD reporting changes are committed and pushed, perform the next Phase 1.5 step: analyze the existing persisted OOD GLiNER predictions using the new reporting metrics.
+
+DO NOT run inference.
+
+Use only the already-persisted prediction artifacts and normalized OOD datasets currently in the repository.
+
+Datasets:
+- AI4Privacy
+- Gretel
+- Argilla
+
+Task:
+
+1. Locate the persisted OOD prediction artifacts and the corresponding normalized datasets/manifests.
+
+2. Run the updated offline analyzer against each dataset using the existing persisted predictions.
+
+3. For each dataset, report BOTH:
+   - `full_strict`
+   - `gateway_supported_only_strict`
+
+Also report:
+   - `ontology_coverage`
+   - per-type metrics
+   - existing detailed error categories
+   - supported-type detector errors
+
+4. Produce one concise comparison table with, for each dataset:
+   - GT entities
+   - supported GT entities
+   - supported GT percentage
+   - UNMAPPED GT count
+   - unsupported-but-mapped GT count
+   - full strict precision
+   - full strict recall
+   - full strict F1
+   - supported-only precision
+   - supported-only recall
+   - supported-only F1
+
+5. Then analyze the supported-only results.
+
+Specifically identify:
+- which currently supported entity types contribute the most FN
+- which contribute the most FP
+- whether errors are primarily detector misses, span mismatches, or type confusion
+- the most important recurring boundary/span patterns
+- any obvious dataset-specific behavior
+
+Do NOT make model-change recommendations yet.
+
+Do NOT:
+- modify GLiNER configuration
+- change threshold
+- change max_width
+- add the email hybrid
+- regenerate predictions
+- alter prediction artifacts
+- retune anything
+
+The purpose of this step is diagnosis only.
+
+CHECKPOINT REQUIREMENTS:
+
+Before execution:
+`CHECKPOINT 1/4 — Analysis setup`
+Report:
+- current branch/commit
+- datasets/artifacts found
+- exact analyzer command(s) planned
+
+For each dataset:
+`CHECKPOINT — <dataset> analysis started`
+Then:
+`CHECKPOINT — <dataset> analysis complete`
+Include:
+- elapsed time
+- full strict F1
+- supported-only F1
+- supported GT %
+
+If a command takes long enough to estimate:
+- report elapsed time
+- report measured ETA
+- do not invent an ETA before enough runtime has elapsed
+
+After all datasets:
+`CHECKPOINT 2/4 — OOD metrics collected`
+
+Then:
+`CHECKPOINT 3/4 — Supported-type error analysis complete`
+Summarize the major supported-type error patterns.
+
+Finally:
+`CHECKPOINT 4/4 — Final diagnostic report complete`
+
+Final response must contain:
+- exact commands run
+- dataset-by-dataset metrics
+- comparison table
+- supported-only error analysis
+- elapsed times
+- warnings/skips/errors, if any
+- explicit confirmation that no inference was run and no persisted predictions were modified
+
+Do not commit anything unless a code/documentation change is actually required. This task should normally be read/analyze-only.
+High

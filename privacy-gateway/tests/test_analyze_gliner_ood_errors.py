@@ -252,3 +252,167 @@ def test_repository_output_is_rejected(tmp_path: Path) -> None:
     output = Path(__file__).resolve().parents[1] / "analysis_report.json"
     with pytest.raises(ValueError, match="outside repository"):
         analysis.run(normalized, saved, output)
+
+
+def test_full_and_supported_views_with_distinct_coverage_populations(tmp_path: Path) -> None:
+    report = analysis.analyze(*make_inputs(
+        tmp_path,
+        [("PERSON", 2, 8), ("ORGANIZATION", 12, 18),
+         ("BANK_ACCOUNT", 20, 26), ("UNMAPPED", 28, 34)],
+        [("first_name", 2, 8), ("company_name", 12, 18), ("email", 40, 44)],
+    ))
+    # Legacy counts and unsupported exact matches are unchanged in the full view.
+    assert report["overall"] == {"tp": 2, "fp": 1, "fn": 2}
+    assert report["full_strict"] == {
+        "tp": 2, "fp": 1, "fn": 2,
+        "precision": pytest.approx(2 / 3), "recall": 0.5,
+        "f1": pytest.approx(4 / 7), "gt_entity_count": 4, "prediction_count": 3,
+    }
+    assert report["gateway_supported_only_strict"] == {
+        "tp": 1, "fp": 1, "fn": 0,
+        "precision": 0.5, "recall": 1.0, "f1": pytest.approx(2 / 3),
+        "gt_entity_count": 1, "prediction_count": 2,
+    }
+    assert report["ontology_coverage"] == {
+        "gt_entity_count": 4,
+        "gateway_supported_gt_count": 1,
+        "gateway_supported_gt_pct": 25.0,
+        "unmapped_gt_count": 1,
+        "unsupported_but_mapped_gt_count": 2,
+        "gt_by_adapter_category": {
+            "supported_direct": 1, "unmapped_source_label": 1, "unsupported_entity": 2,
+        },
+    }
+    assert report["per_entity_type"]["ORGANIZATION"]["tp"] == 1
+    assert report["per_entity_type"]["BANK_ACCOUNT"]["fn"] == 1
+    assert report["unmapped_ground_truth"] == 1
+    assert report["false_negatives"]["by_failure_category"] == {
+        "unmapped_source_label": 1, "unsupported_entity": 1,
+    }
+
+
+@pytest.mark.parametrize(("gt_type", "native"), [
+    ("PERSON", "first_name"),
+    ("EMAIL_ADDRESS", "email"),
+    ("PHONE_NUMBER", "phone_number"),
+    ("CREDIT_CARD", "credit_debit_card"),
+    ("IP_ADDRESS", "ipv4"),
+    ("DATE_TIME", "date_time"),
+    ("LOCATION", "city"),
+    ("DATE", "date"),
+    ("TIME", "time"),
+])
+def test_supported_types_and_existing_date_time_mapping(
+    tmp_path: Path, gt_type: str, native: str,
+) -> None:
+    report = analysis.analyze(*make_inputs(tmp_path, [(gt_type, 2, 8)], [(native, 2, 8)]))
+    assert report["full_strict"] == report["gateway_supported_only_strict"]
+    assert report["gateway_supported_only_strict"] == {
+        "tp": 1, "fp": 0, "fn": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0,
+        "gt_entity_count": 1, "prediction_count": 1,
+    }
+    assert report["ontology_coverage"]["gateway_supported_gt_pct"] == 100.0
+    if gt_type in {"DATE", "TIME"}:
+        assert report["per_entity_type"]["DATE_TIME"]["tp"] == 1
+        assert report["ontology_coverage"]["gt_by_adapter_category"] == {
+            "adapter_mapped_date_time": 1,
+        }
+    else:
+        assert report["ontology_coverage"]["gt_by_adapter_category"] == {"supported_direct": 1}
+
+
+@pytest.mark.parametrize(("predictions", "full_counts", "supported_fp"), [
+    ([], {"tp": 0, "fp": 0, "fn": 2}, 0),
+    ([("company_name", 2, 8)], {"tp": 1, "fp": 0, "fn": 1}, 0),
+    ([("first_name", 12, 18)], {"tp": 0, "fp": 1, "fn": 2}, 1),
+])
+def test_only_excluded_gt_has_no_supported_fn_or_division_by_zero(
+    tmp_path: Path,
+    predictions: list[tuple[str, int, int]],
+    full_counts: dict[str, int],
+    supported_fp: int,
+) -> None:
+    report = analysis.analyze(*make_inputs(
+        tmp_path, [("ORGANIZATION", 2, 8), ("UNMAPPED", 12, 18)], predictions,
+    ))
+    assert report["overall"] == full_counts
+    assert report["gateway_supported_only_strict"] == {
+        "tp": 0, "fp": supported_fp, "fn": 0,
+        "precision": 0.0, "recall": 0.0, "f1": 0.0,
+        "gt_entity_count": 0, "prediction_count": supported_fp,
+    }
+    coverage = report["ontology_coverage"]
+    assert coverage["gt_entity_count"] == 2
+    assert coverage["gateway_supported_gt_count"] == 0
+    assert coverage["gateway_supported_gt_pct"] == 0.0
+    assert coverage["unmapped_gt_count"] == 1
+    assert coverage["unsupported_but_mapped_gt_count"] == 1
+
+
+def test_supported_prediction_on_excluded_gt_is_not_silently_removed(tmp_path: Path) -> None:
+    report = analysis.analyze(*make_inputs(
+        tmp_path, [("PERSON", 2, 8), ("UNMAPPED", 12, 18), ("ORGANIZATION", 20, 26)],
+        [("first_name", 2, 8), ("email", 12, 18), ("first_name", 20, 26)],
+    ))
+    assert report["overall"] == {"tp": 1, "fp": 2, "fn": 2}
+    supported = report["gateway_supported_only_strict"]
+    assert (supported["tp"], supported["fp"], supported["fn"]) == (1, 2, 0)
+    assert supported["prediction_count"] == 3
+    assert supported["precision"] == pytest.approx(1 / 3)
+    assert supported["recall"] == 1.0
+
+
+def test_supported_view_and_coverage_keep_entity_multiplicity(tmp_path: Path) -> None:
+    report = analysis.analyze(*make_inputs(
+        tmp_path, [("PERSON", 2, 8), ("PERSON", 2, 8), ("UNMAPPED", 12, 18)],
+        [("first_name", 2, 8)],
+    ))
+    assert report["overall"] == {"tp": 1, "fp": 0, "fn": 2}
+    supported = report["gateway_supported_only_strict"]
+    assert (supported["tp"], supported["fp"], supported["fn"]) == (1, 0, 1)
+    assert supported["recall"] == 0.5
+    assert report["ontology_coverage"]["gateway_supported_gt_count"] == 2
+    assert report["ontology_coverage"]["gateway_supported_gt_pct"] == pytest.approx(200 / 3)
+
+
+def test_empty_dataset_has_zero_metrics_and_coverage(tmp_path: Path) -> None:
+    normalized, saved = make_inputs(tmp_path, [], [])
+    identity = json.loads(saved.read_text().split("\n")[0])["identity"]
+    normalized.write_bytes(b"")
+    identity["normalized_sha256"] = sha256_file(normalized)
+    saved.write_text(build_header(identity) + "\n", encoding="utf-8")
+    report = analysis.analyze(normalized, saved)
+    assert report["record_count"] == 0
+    assert report["full_strict"] == report["gateway_supported_only_strict"] == {
+        "tp": 0, "fp": 0, "fn": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0,
+        "gt_entity_count": 0, "prediction_count": 0,
+    }
+    assert report["ontology_coverage"] == {
+        "gt_entity_count": 0, "gateway_supported_gt_count": 0,
+        "gateway_supported_gt_pct": 0.0, "unmapped_gt_count": 0,
+        "unsupported_but_mapped_gt_count": 0, "gt_by_adapter_category": {},
+    }
+
+
+def test_existing_detailed_diagnostics_remain_full_dataset(tmp_path: Path) -> None:
+    report = analysis.analyze(*make_inputs(
+        tmp_path,
+        [("PERSON", 4, 10), ("EMAIL_ADDRESS", 20, 26), ("UNMAPPED", 30, 34)],
+        [("first_name", 2, 12), ("first_name", 20, 26), ("age", 30, 34)],
+    ))
+    assert report["overall"] == {"tp": 0, "fp": 2, "fn": 3}
+    assert report["false_negatives"]["by_failure_category"] == {
+        "detector_miss": 1, "span_mismatch": 1, "unmapped_source_label": 1,
+    }
+    assert report["false_positives"]["by_failure_category"] == {
+        "detector_recognizer": 1, "span_mismatch": 1,
+    }
+    assert report["span_mismatches"]["overlap_pairs"] == 1
+    assert report["span_mismatches"]["boundary_patterns"]["prediction_contains_gt"] == 1
+    assert report["likely_type_confusions"]["by_ground_truth_and_predicted_type"] == {
+        "EMAIL_ADDRESS": {"PERSON": 1},
+    }
+    assert report["unmapped_ground_truth"] == 1
+    assert report["unmapped_predictions_removed"] == 1
+    assert report["per_entity_type"]["UNMAPPED"]["fn"] == 1
+    assert report["gateway_supported_only_strict"]["fn"] == 2

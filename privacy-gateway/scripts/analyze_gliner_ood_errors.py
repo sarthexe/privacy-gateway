@@ -3,6 +3,8 @@
 Run once per normalized dataset/prediction threshold pair. No model is loaded.
 Error groups count unmatched entities with multiplicity. Boundary and confusion
 diagnostics count overlapping GT/prediction pairs; boundary flags are not exclusive.
+Full strict metrics retain every annotation; a separate gateway-supported-only
+view filters evaluation types on both sides without changing the scorer.
 """
 
 from __future__ import annotations
@@ -96,6 +98,26 @@ def _validate_native(row: dict[str, Any], text: str, label_map: GlinerLabelMap) 
         raise ValueError("native and gateway ground-truth spans differ")
 
 
+def _strict_summary(state: EvaluationState) -> dict[str, int | float]:
+    """Summarize an existing strict score using the shared metrics helper."""
+    totals = state.aggregate()
+    gt_count = totals["tp"] + totals["fn"]
+    prediction_count = totals["tp"] + totals["fp"]
+    overall = metric_rows(
+        Counter({"overall": gt_count}),
+        Counter({"overall": prediction_count}),
+        Counter({"overall": totals["tp"]}),
+    )["overall"]
+    return {
+        **totals,
+        "precision": overall["precision"],
+        "recall": overall["recall"],
+        "f1": overall["f1"],
+        "gt_entity_count": gt_count,
+        "prediction_count": prediction_count,
+    }
+
+
 def analyze(normalized: Path, predictions: Path) -> dict[str, Any]:
     """Validate and score an existing pair; return only allowlisted aggregates."""
     label_map = load_label_map()
@@ -127,6 +149,9 @@ def analyze(normalized: Path, predictions: Path) -> dict[str, Any]:
         return entity_type if entity_type in allowed_types else "UNSUPPORTED_ENTITY"
 
     state = EvaluationState()
+    supported_state = EvaluationState()
+    gt_entity_count = supported_gt_count = unsupported_gt_count = 0
+    gt_adapter_categories: Counter[str] = Counter()
     fn_groups: Counter[str] = Counter()
     fp_groups: Counter[str] = Counter()
     fn_types: dict[str, Counter[str]] = defaultdict(Counter)
@@ -163,6 +188,24 @@ def analyze(normalized: Path, predictions: Path) -> dict[str, Any]:
             [(tuple((e.entity_type, e.start, e.end) for e in truth),
               tuple((e.entity_type, e.start, e.end) for e in predicted))],
         )
+        # Both lists already use evaluation_type() through the existing validator
+        # and to_gateway(). Do not duplicate DATE/TIME mapping or alter annotations.
+        supported_truth = [e for e in truth if e.entity_type in SUPPORTED_TYPES]
+        supported_predictions = [e for e in predicted if e.entity_type in SUPPORTED_TYPES]
+        score_batch(
+            supported_state, Batch([(index, b"")], 0, False),
+            [(tuple((e.entity_type, e.start, e.end) for e in supported_truth),
+              tuple((e.entity_type, e.start, e.end) for e in supported_predictions))],
+        )
+        gt_entity_count += len(truth)
+        supported_gt_count += len(supported_truth)
+        unsupported_gt_count += sum(
+            e.entity_type not in SUPPORTED_TYPES and e.entity_type != "UNMAPPED"
+            for e in truth
+        )
+        # Preserve the existing adapter's distinction between raw DATE/TIME and
+        # directly supported DATE_TIME. Only fixed category names are reported.
+        gt_adapter_categories.update(adapter_category(e["type"]) for e in row["entities"])
         truth_counts, prediction_counts = Counter(truth), Counter(predicted)
         matches = truth_counts & prediction_counts
         missed, spurious = truth_counts - matches, prediction_counts - matches
@@ -236,6 +279,18 @@ def analyze(normalized: Path, predictions: Path) -> dict[str, Any]:
         "threshold": threshold,
         "record_count": count,
         "overall": state.aggregate(),
+        "full_strict": _strict_summary(state),
+        "gateway_supported_only_strict": _strict_summary(supported_state),
+        "ontology_coverage": {
+            "gt_entity_count": gt_entity_count,
+            "gateway_supported_gt_count": supported_gt_count,
+            "gateway_supported_gt_pct": (
+                100 * supported_gt_count / gt_entity_count if gt_entity_count else 0.0
+            ),
+            "unmapped_gt_count": unmapped,
+            "unsupported_but_mapped_gt_count": unsupported_gt_count,
+            "gt_by_adapter_category": dict(sorted(gt_adapter_categories.items())),
+        },
         "per_entity_type": metrics,
         "unmapped_ground_truth": unmapped,
         "unmapped_predictions_removed": removed_predictions,

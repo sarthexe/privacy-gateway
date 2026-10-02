@@ -1,0 +1,496 @@
+{
+  "false_negatives": {
+    "by_entity_type": {
+      "ADDRESS": {
+        "unsupported_entity": 154
+      },
+      "BANK_ACCOUNT": {
+        "unsupported_entity": 60
+      },
+      "CREDIT_CARD": {
+        "detector_miss": 86
+      },
+      "DATE_TIME": {
+        "detector_miss": 20,
+        "span_mismatch": 2
+      },
+      "IP_ADDRESS": {
+        "detector_miss": 3,
+        "span_mismatch": 1
+      },
+      "LOCATION": {
+        "detector_miss": 43
+      },
+      "ORGANIZATION": {
+        "unsupported_entity": 72
+      },
+      "PERSON": {
+        "detector_miss": 22
+      },
+      "PHONE_NUMBER": {
+        "detector_miss": 15,
+        "span_mismatch": 1
+      },
+      "SOCIAL_IDENTIFIER": {
+        "unsupported_entity": 43
+      },
+      "UNMAPPED": {
+        "unmapped_source_label": 3524
+      },
+      "USERNAME": {
+        "unsupported_entity": 3
+      }
+    },
+    "by_failure_category": {
+      "detector_miss": 189,
+      "span_mismatch": 4,
+      "unmapped_source_label": 3524,
+      "unsupported_entity": 332
+    }
+  },
+  "false_positives": {
+    "by_entity_type": {
+      "ADDRESS": {
+        "detector_recognizer": 116,
+        "span_mismatch": 62
+      },
+      "BANK_ACCOUNT": {
+        "detector_recognizer": 117,
+        "span_mismatch": 2
+      },
+      "CREDIT_CARD": {
+        "detector_recognizer": 60
+      },
+      "DATE_TIME": {
+        "detector_recognizer": 31,
+        "span_mismatch": 2
+      },
+      "EMAIL_ADDRESS": {
+        "detector_recognizer": 12
+      },
+      "ID_CARD": {
+        "detector_recognizer": 26
+      },
+      "IP_ADDRESS": {
+        "detector_recognizer": 106,
+        "span_mismatch": 1
+      },
+      "LOCATION": {
+        "detector_recognizer": 272
+      },
+      "ORGANIZATION": {
+        "detector_recognizer": 39,
+        "span_mismatch": 7
+      },
+      "PERSON": {
+        "detector_recognizer": 351
+      },
+      "PHONE_NUMBER": {
+        "detector_recognizer": 30,
+        "span_mismatch": 1
+      },
+      "SOCIAL_IDENTIFIER": {
+        "detector_recognizer": 3,
+        "span_mismatch": 3
+      },
+      "USERNAME": {
+        "detector_recognizer": 28
+      }
+    },
+    "by_failure_category": {
+      "detector_recognizer": 1191,
+      "span_mismatch": 78
+    }
+  },
+  "label_map": {
+    "deviations": {},
+    "labels": [
+      "account_number",
+      "age",
+      "api_key",
+      "bank_routing_number",
+      "biometric_identifier",
+      "blood_type",
+      "certificate_license_number",
+      "city",
+      "company_name",
+      "coordinate",
+      "country",
+      "county",
+      "credit_debit_card",
+      "customer_id",
+      "cvv",
+      "date",
+      "date_of_birth",
+      "date_time",
+      "device_identifier",
+      "education_level",
+      "email",
+      "employee_id",
+      "employment_status",
+      "fax_number",
+      "first_name",
+      "gender",
+      "health_plan_beneficiary_number",
+      "http_cookie",
+      "ipv4",
+      "ipv6",
+      "language",
+      "last_name",
+      "license_plate",
+      "mac_address",
+      "medical_record_number",
+      "national_id",
+      "occupation",
+      "password",
+      "phone_number",
+      "pin",
+      "political_view",
+      "postcode",
+      "race_ethnicity",
+      "religious_belief",
+      "sexuality",
+      "ssn",
+      "state",
+      "street_address",
+      "swift_bic",
+      "tax_id",
+      "time",
+      "unique_id",
+      "url",
+      "user_name",
+      "vehicle_identifier"
+    ],
+    "mapping": {
+      "account_number": "BANK_ACCOUNT",
+      "age": "UNMAPPED",
+      "api_key": "UNMAPPED",
+      "bank_routing_number": "BANK_ACCOUNT",
+      "biometric_identifier": "UNMAPPED",
+      "blood_type": "UNMAPPED",
+      "certificate_license_number": "UNMAPPED",
+      "city": "LOCATION",
+      "company_name": "ORGANIZATION",
+      "coordinate": "LOCATION",
+      "country": "LOCATION",
+      "county": "LOCATION",
+      "credit_debit_card": "CREDIT_CARD",
+      "customer_id": "ID_CARD",
+      "cvv": "CREDIT_CARD",
+      "date": "DATE",
+      "date_of_birth": "DATE",
+      "date_time": "DATE",
+      "device_identifier": "UNMAPPED",
+      "education_level": "UNMAPPED",
+      "email": "EMAIL_ADDRESS",
+      "employee_id": "ID_CARD",
+      "employment_status": "UNMAPPED",
+      "fax_number": "PHONE_NUMBER",
+      "first_name": "PERSON",
+      "gender": "UNMAPPED",
+      "health_plan_beneficiary_number": "SOCIAL_IDENTIFIER",
+      "http_cookie": "UNMAPPED",
+      "ipv4": "IP_ADDRESS",
+      "ipv6": "IP_ADDRESS",
+      "language": "UNMAPPED",
+      "last_name": "PERSON",
+      "license_plate": "UNMAPPED",
+      "mac_address": "UNMAPPED",
+      "medical_record_number": "SOCIAL_IDENTIFIER",
+      "national_id": "ID_CARD",
+      "occupation": "UNMAPPED",
+      "password": "UNMAPPED",
+      "phone_number": "PHONE_NUMBER",
+      "pin": "UNMAPPED",
+      "political_view": "UNMAPPED",
+      "postcode": "ADDRESS",
+      "race_ethnicity": "UNMAPPED",
+      "religious_belief": "UNMAPPED",
+      "sexuality": "UNMAPPED",
+      "ssn": "SOCIAL_IDENTIFIER",
+      "state": "LOCATION",
+      "street_address": "ADDRESS",
+      "swift_bic": "BANK_ACCOUNT",
+      "tax_id": "SOCIAL_IDENTIFIER",
+      "time": "TIME",
+      "unique_id": "UNMAPPED",
+      "url": "UNMAPPED",
+      "user_name": "USERNAME",
+      "vehicle_identifier": "UNMAPPED"
+    },
+    "model_id": "nvidia/gliner-PII",
+    "model_revision": "bd23e8ef4425fd04e34c5204ab49ffaa706eae79"
+  },
+  "likely_type_confusions": {
+    "by_ground_truth_and_predicted_type": {
+      "CREDIT_CARD": {
+        "BANK_ACCOUNT": 15,
+        "ID_CARD": 4,
+        "PHONE_NUMBER": 3
+      },
+      "DATE_TIME": {
+        "ADDRESS": 1,
+        "CREDIT_CARD": 2
+      },
+      "LOCATION": {
+        "ADDRESS": 3,
+        "ORGANIZATION": 4,
+        "PERSON": 1
+      },
+      "PERSON": {
+        "LOCATION": 6,
+        "USERNAME": 5
+      },
+      "PHONE_NUMBER": {
+        "CREDIT_CARD": 1,
+        "DATE_TIME": 1,
+        "IP_ADDRESS": 1
+      }
+    },
+    "counting": "different-type overlapping pairs; excludes UNMAPPED/unsupported GT",
+    "overlap_pairs": 47
+  },
+  "normalized_sha256": "551e98472d8c0df3e5ec1590f0b62960d3be667266eadf65518715fd534ee6cf",
+  "overall": {
+    "fn": 4049,
+    "fp": 1269,
+    "tp": 2579
+  },
+  "per_entity_type": {
+    "ADDRESS": {
+      "exact_matches": 86,
+      "f1": 0.3412698412698413,
+      "false_negatives": 154,
+      "false_positives": 178,
+      "fn": 154,
+      "fp": 178,
+      "precision": 0.32575757575757575,
+      "predictions": 264,
+      "recall": 0.35833333333333334,
+      "support": 240,
+      "tp": 86
+    },
+    "BANK_ACCOUNT": {
+      "exact_matches": 123,
+      "f1": 0.5788235294117647,
+      "false_negatives": 60,
+      "false_positives": 119,
+      "fn": 60,
+      "fp": 119,
+      "precision": 0.5082644628099173,
+      "predictions": 242,
+      "recall": 0.6721311475409836,
+      "support": 183,
+      "tp": 123
+    },
+    "CREDIT_CARD": {
+      "exact_matches": 94,
+      "f1": 0.562874251497006,
+      "false_negatives": 86,
+      "false_positives": 60,
+      "fn": 86,
+      "fp": 60,
+      "precision": 0.6103896103896104,
+      "predictions": 154,
+      "recall": 0.5222222222222223,
+      "support": 180,
+      "tp": 94
+    },
+    "DATE_TIME": {
+      "exact_matches": 451,
+      "f1": 0.942528735632184,
+      "false_negatives": 22,
+      "false_positives": 33,
+      "fn": 22,
+      "fp": 33,
+      "precision": 0.9318181818181818,
+      "predictions": 484,
+      "recall": 0.9534883720930233,
+      "support": 473,
+      "tp": 451
+    },
+    "EMAIL_ADDRESS": {
+      "exact_matches": 177,
+      "f1": 0.9672131147540983,
+      "false_negatives": 0,
+      "false_positives": 12,
+      "fn": 0,
+      "fp": 12,
+      "precision": 0.9365079365079365,
+      "predictions": 189,
+      "recall": 1.0,
+      "support": 177,
+      "tp": 177
+    },
+    "ID_CARD": {
+      "exact_matches": 0,
+      "f1": 0.0,
+      "false_negatives": 0,
+      "false_positives": 26,
+      "fn": 0,
+      "fp": 26,
+      "precision": 0.0,
+      "predictions": 26,
+      "recall": 0.0,
+      "support": 0,
+      "tp": 0
+    },
+    "IP_ADDRESS": {
+      "exact_matches": 229,
+      "f1": 0.804920913884007,
+      "false_negatives": 4,
+      "false_positives": 107,
+      "fn": 4,
+      "fp": 107,
+      "precision": 0.6815476190476191,
+      "predictions": 336,
+      "recall": 0.9828326180257511,
+      "support": 233,
+      "tp": 229
+    },
+    "LOCATION": {
+      "exact_matches": 221,
+      "f1": 0.5838837516512551,
+      "false_negatives": 43,
+      "false_positives": 272,
+      "fn": 43,
+      "fp": 272,
+      "precision": 0.4482758620689655,
+      "predictions": 493,
+      "recall": 0.8371212121212122,
+      "support": 264,
+      "tp": 221
+    },
+    "ORGANIZATION": {
+      "exact_matches": 59,
+      "f1": 0.5,
+      "false_negatives": 72,
+      "false_positives": 46,
+      "fn": 72,
+      "fp": 46,
+      "precision": 0.5619047619047619,
+      "predictions": 105,
+      "recall": 0.45038167938931295,
+      "support": 131,
+      "tp": 59
+    },
+    "PERSON": {
+      "exact_matches": 863,
+      "f1": 0.8222963315864696,
+      "false_negatives": 22,
+      "false_positives": 351,
+      "fn": 22,
+      "fp": 351,
+      "precision": 0.7108731466227347,
+      "predictions": 1214,
+      "recall": 0.9751412429378531,
+      "support": 885,
+      "tp": 863
+    },
+    "PHONE_NUMBER": {
+      "exact_matches": 98,
+      "f1": 0.8065843621399177,
+      "false_negatives": 16,
+      "false_positives": 31,
+      "fn": 16,
+      "fp": 31,
+      "precision": 0.7596899224806202,
+      "predictions": 129,
+      "recall": 0.8596491228070176,
+      "support": 114,
+      "tp": 98
+    },
+    "SOCIAL_IDENTIFIER": {
+      "exact_matches": 33,
+      "f1": 0.5739130434782609,
+      "false_negatives": 43,
+      "false_positives": 6,
+      "fn": 43,
+      "fp": 6,
+      "precision": 0.8461538461538461,
+      "predictions": 39,
+      "recall": 0.4342105263157895,
+      "support": 76,
+      "tp": 33
+    },
+    "UNMAPPED": {
+      "exact_matches": 0,
+      "f1": 0.0,
+      "false_negatives": 3524,
+      "false_positives": 0,
+      "fn": 3524,
+      "fp": 0,
+      "precision": 0.0,
+      "predictions": 0,
+      "recall": 0.0,
+      "support": 3524,
+      "tp": 0
+    },
+    "USERNAME": {
+      "exact_matches": 145,
+      "f1": 0.9034267912772586,
+      "false_negatives": 3,
+      "false_positives": 28,
+      "fn": 3,
+      "fp": 28,
+      "precision": 0.838150289017341,
+      "predictions": 173,
+      "recall": 0.9797297297297297,
+      "support": 148,
+      "tp": 145
+    }
+  },
+  "predictions_sha256": "b42d53b388ca682f8b580931467be26fd36f992cbcc5430bb9ff2507a41f48e0",
+  "privacy": "aggregate-only; no source text, entity values, snippets, or offsets",
+  "record_count": 2096,
+  "span_mismatches": {
+    "boundary_patterns": {
+      "gt_contains_prediction": 3,
+      "prediction_contains_gt": 77,
+      "prediction_ends_after_gt": 33,
+      "prediction_ends_before_gt": 1,
+      "prediction_starts_after_gt": 3,
+      "prediction_starts_before_gt": 51
+    },
+    "by_entity_type": {
+      "ADDRESS": {
+        "prediction_contains_gt": 64,
+        "prediction_ends_after_gt": 27,
+        "prediction_starts_before_gt": 43
+      },
+      "BANK_ACCOUNT": {
+        "prediction_contains_gt": 2,
+        "prediction_starts_before_gt": 2
+      },
+      "DATE_TIME": {
+        "prediction_contains_gt": 2,
+        "prediction_ends_after_gt": 1,
+        "prediction_starts_before_gt": 2
+      },
+      "IP_ADDRESS": {
+        "prediction_contains_gt": 1,
+        "prediction_ends_after_gt": 1
+      },
+      "ORGANIZATION": {
+        "gt_contains_prediction": 3,
+        "prediction_contains_gt": 4,
+        "prediction_ends_after_gt": 4,
+        "prediction_ends_before_gt": 1,
+        "prediction_starts_after_gt": 3
+      },
+      "PHONE_NUMBER": {
+        "prediction_contains_gt": 1,
+        "prediction_starts_before_gt": 1
+      },
+      "SOCIAL_IDENTIFIER": {
+        "prediction_contains_gt": 3,
+        "prediction_starts_before_gt": 3
+      }
+    },
+    "counting": "non-exact same-type overlapping pairs involving an unmatched entity",
+    "overlap_pairs": 80
+  },
+  "threshold": 0.7,
+  "unmapped_ground_truth": 3524,
+  "unmapped_predictions_removed": 1983
+}

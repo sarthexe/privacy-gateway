@@ -1,0 +1,30 @@
+{
+  "artifacts/phase-1.5-ood/argilla/REPRODUCIBILITY.json": {
+    "bytes": 648,
+    "sha256": "c6030a079ce8729954df5c54edd399bfffd7c64723c801dd64d86cad77d65464"
+  },
+  "artifacts/phase-1.5-ood/argilla/errors_t0.3.json": {
+    "bytes": 12696,
+    "sha256": "acb326d67e934efd664b1d5b6132c4993980e3f768069287f27e9861416e5602"
+  },
+  "artifacts/phase-1.5-ood/argilla/errors_t0.7.json": {
+    "bytes": 12225,
+    "sha256": "b1fd9ab5d6ffb27f795e36b44f51ebaa9a4102e3976cdc23e4b474ee4e73d741"
+  },
+  "artifacts/phase-1.5-ood/argilla/gliner_ood_t0.3.json": {
+    "bytes": 23239,
+    "sha256": "5321b6b4d69f3870345e2350ec69e478eaef70c73d5cd419868bcaac2e431c74"
+  },
+  "artifacts/phase-1.5-ood/argilla/gliner_ood_t0.3.jsonl.gz": {
+    "bytes": 98333,
+    "sha256": "36448bcbd2a4929a55ca7ee0a08c5854a412f2b7afd5bed2f83d131a8d0d121d"
+  },
+  "artifacts/phase-1.5-ood/argilla/gliner_ood_t0.7.json": {
+    "bytes": 23040,
+    "sha256": "4f9f1a2a564052c78f78a72c3dbc059a04edcd55115583365086c70f33753943"
+  },
+  "artifacts/phase-1.5-ood/argilla/gliner_ood_t0.7.jsonl.gz": {
+    "bytes": 81459,
+    "sha256": "635da713ac74a83fe871417706987749e0a674d7393ec06da6d8e6a1bc24ee04"
+  }
+}

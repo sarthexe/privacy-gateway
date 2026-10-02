@@ -1,0 +1,203 @@
+We need to fix the Phase 1.5 OOD evaluation reporting before making any detector/model changes.
+
+Context:
+The current gateway ontology only supports these 7 entity types:
+- PERSON
+- EMAIL_ADDRESS
+- PHONE_NUMBER
+- CREDIT_CARD
+- IP_ADDRESS
+- DATE_TIME
+- LOCATION
+
+In `scripts/presidio_evaluation.py`:
+- DATE and TIME are mapped to DATE_TIME
+- `SUPPORTED_TYPES` is based on the gateway `EntityType`
+- unsupported source labels are currently categorized separately
+- `UNMAPPED` is tracked separately
+
+The current OOD reports calculate one overall strict exact-match F1, but that number is confounded by ontology coverage because datasets contain entity types that the gateway intentionally does not support.
+
+DO NOT run any new inference. Reuse the persisted OOD prediction artifacts and existing strict scoring logic.
+
+Task:
+
+1. Update `scripts/analyze_gliner_ood_errors.py` so every OOD report contains TWO clearly separated evaluation views.
+
+A. Full strict evaluation
+Keep the existing metric exactly as it is:
+- precision
+- recall
+- F1
+- TP
+- FP
+- FN
+- prediction count
+
+This is the full dataset result and must remain backward-compatible with the current report.
+
+B. Gateway-supported-only evaluation
+Add a second strict evaluation that considers only ground-truth entities whose normalized evaluation type is currently supported by the gateway:
+- PERSON
+- EMAIL_ADDRESS
+- PHONE_NUMBER
+- CREDIT_CARD
+- IP_ADDRESS
+- DATE_TIME
+- LOCATION
+
+DATE and TIME must continue to use the existing mapping to DATE_TIME.
+
+For this supported-only metric:
+- exclude unsupported entity types from the scoring population
+- exclude UNMAPPED source labels from the scoring population
+- score predictions against only those supported ground-truth entities
+- preserve the same exact type + exact `[start,end)` strict matching semantics already used by the project
+- do not silently modify the existing scorer behavior
+
+Report:
+- supported-only precision
+- supported-only recall
+- supported-only F1
+- supported-only TP
+- supported-only FP
+- supported-only FN
+- supported-only GT entity count
+- supported-only prediction count
+
+2. Add ontology coverage metrics based on ground truth.
+
+Report:
+- `gt_entity_count`
+- `gateway_supported_gt_count`
+- `gateway_supported_gt_pct`
+- `unmapped_gt_count`
+- `unsupported_but_mapped_gt_count`
+
+Definitions:
+- `gateway_supported_gt_count`: GT entities whose normalized evaluation type is one of the 7 gateway-supported types
+- `unmapped_gt_count`: GT entities whose source label maps to `UNMAPPED`
+- `unsupported_but_mapped_gt_count`: GT entities with a valid mapped label that is not supported by the gateway
+- percentages must use total GT entities as denominator
+
+Do not count unsupported or unmapped entities as detector misses inside the supported-only metric.
+
+3. Preserve the existing detailed error analysis.
+
+The report must continue to include:
+- per-type metrics
+- failure groups
+- boundary patterns
+- likely type confusion
+- UNMAPPED analysis
+- adapter category information
+
+Do not remove existing fields unless absolutely necessary. Prefer additive, backward-compatible changes.
+
+4. Make the supported-only filtering reuse the existing ontology/type mapping instead of duplicating mapping rules.
+
+Use the existing `EVALUATION_TYPE_MAP`, `SUPPORTED_TYPES`, and `safe_type` / adapter logic where appropriate so there is a single source of truth.
+
+5. Add tests in `tests/test_analyze_gliner_ood_errors.py`.
+
+Cover at minimum:
+- supported-only scoring excludes unsupported GT entities
+- UNMAPPED GT entities are excluded from supported-only scoring
+- DATE and TIME are included as DATE_TIME
+- ontology coverage counts are correct
+- unsupported-but-mapped and unmapped counts are distinct
+- full strict metrics remain unchanged
+- edge case where a dataset contains only unsupported/unmapped entities
+- edge case with zero supported GT entities must not cause division-by-zero
+
+Use small deterministic fixtures with hand-computable TP/FP/FN values.
+
+6. Run:
+- targeted analyzer tests
+- full test suite
+- Ruff/lint checks relevant to changed files
+- mypy/type checks if already part of the repo validation
+
+Do not run GLiNER inference or regenerate the OOD predictions.
+
+7. Update any report/schema/documentation needed so the distinction between:
+- detector performance over all dataset annotations
+- detector performance over gateway-supported annotations
+- ontology coverage
+is explicit.
+
+8. Progress/checkpoint reporting is REQUIRED.
+
+Because some validation commands may take a while, do not go silent during execution.
+
+Before starting:
+- report the current branch/commit
+- report the files you expect to inspect/change
+- state the execution plan in a few checkpoints
+
+During implementation:
+- after inspecting the relevant files, report:
+  `CHECKPOINT 1/5 — Analysis complete`
+  Include what files/rules were found and what will be changed.
+
+- after implementing the reporting changes, report:
+  `CHECKPOINT 2/5 — Reporting changes complete`
+  Include the main files/functions changed.
+
+- after adding tests, report:
+  `CHECKPOINT 3/5 — Tests added`
+  Include the number/type of tests added.
+
+During long-running commands:
+- immediately report when each command starts
+- when meaningful progress is available, report:
+  `Progress: X/Y complete (Z%)`
+- for test suites, report completed test groups/files where practical
+- for long-running commands, provide an ETA based on measured elapsed time
+- example format:
+  `CHECKPOINT — Targeted tests: 18/18 passed | elapsed: 12s | ETA: complete`
+  `CHECKPOINT — Full suite: 120/229 tests completed | 52% | elapsed: 41s | estimated remaining: 38s`
+
+Do NOT invent ETAs.
+Only provide an ETA once enough elapsed runtime has been observed to estimate it.
+If a command is too short to justify an ETA, simply report completion.
+
+For multi-command validation, explicitly show:
+- command started
+- command completed
+- result
+- elapsed time
+- ETA only when meaningful
+
+Before finishing:
+- report:
+  `CHECKPOINT 4/5 — Validation complete`
+  Include exact commands, pass/fail counts, and elapsed times.
+
+Then:
+- review the final diff
+- confirm there were no changes to model configuration, thresholds, max_width, prediction artifacts, or inference code
+- report:
+  `CHECKPOINT 5/5 — Final review complete`
+
+Final response must contain:
+- files changed
+- exact test commands run
+- exact results
+- new metric fields
+- concise explanation of full vs supported-only scoring
+- elapsed time for major validation commands
+- any warnings or unresolved issues
+
+Important constraints:
+- Do not change the GLiNER model
+- Do not change thresholds
+- Do not change max_width
+- Do not add the email hybrid
+- Do not alter persisted prediction artifacts
+- Do not retune anything
+- Do not make any detector/model recommendations yet
+- This task is evaluation/reporting only
+- Follow the repository's existing coding style and strict evaluation semantics
+- Keep checkpoint messages concise and factual; do not spam a checkpoint for every trivial operation
+High

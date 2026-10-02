@@ -1,0 +1,1646 @@
+{
+  "by_language_gateway_ontology": {
+    "Dutch": {
+      "f1": 0.450871018438586,
+      "fn": 32545,
+      "fp": 17071,
+      "per_entity": {
+        "ADDRESS": {
+          "exact_matches": 956,
+          "f1": 0.2907542579075426,
+          "false_negatives": 1051,
+          "false_positives": 3613,
+          "precision": 0.20923615670825127,
+          "predictions": 4569,
+          "recall": 0.4763328350772297,
+          "support": 2007
+        },
+        "BANK_ACCOUNT": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 17,
+          "precision": 0.0,
+          "predictions": 17,
+          "recall": 0.0,
+          "support": 0
+        },
+        "CREDIT_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 96,
+          "precision": 0.0,
+          "predictions": 96,
+          "recall": 0.0,
+          "support": 0
+        },
+        "DATE_TIME": {
+          "exact_matches": 5226,
+          "f1": 0.7402266288951842,
+          "false_negatives": 656,
+          "false_positives": 3012,
+          "precision": 0.6343772760378733,
+          "predictions": 8238,
+          "recall": 0.8884733083985039,
+          "support": 5882
+        },
+        "EMAIL_ADDRESS": {
+          "exact_matches": 2349,
+          "f1": 0.8996553044810417,
+          "false_negatives": 286,
+          "false_positives": 238,
+          "precision": 0.908001546192501,
+          "predictions": 2587,
+          "recall": 0.89146110056926,
+          "support": 2635
+        },
+        "ID_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 534,
+          "precision": 0.0,
+          "predictions": 534,
+          "recall": 0.0,
+          "support": 0
+        },
+        "IP_ADDRESS": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 2370,
+          "precision": 0.0,
+          "predictions": 2370,
+          "recall": 0.0,
+          "support": 0
+        },
+        "LOCATION": {
+          "exact_matches": 4554,
+          "f1": 0.6998616874135547,
+          "false_negatives": 1127,
+          "false_positives": 2779,
+          "precision": 0.6210282285558435,
+          "predictions": 7333,
+          "recall": 0.8016194331983806,
+          "support": 5681
+        },
+        "ORGANIZATION": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 405,
+          "precision": 0.0,
+          "predictions": 405,
+          "recall": 0.0,
+          "support": 0
+        },
+        "PERSON": {
+          "exact_matches": 4292,
+          "f1": 0.6834939087506966,
+          "false_negatives": 1487,
+          "false_positives": 2488,
+          "precision": 0.6330383480825958,
+          "predictions": 6780,
+          "recall": 0.7426890465478456,
+          "support": 5779
+        },
+        "PHONE_NUMBER": {
+          "exact_matches": 1336,
+          "f1": 0.7467859139183902,
+          "false_negatives": 687,
+          "false_positives": 219,
+          "precision": 0.8591639871382637,
+          "predictions": 1555,
+          "recall": 0.6604053386060307,
+          "support": 2023
+        },
+        "SOCIAL_IDENTIFIER": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 482,
+          "precision": 0.0,
+          "predictions": 482,
+          "recall": 0.0,
+          "support": 0
+        },
+        "UNMAPPED": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 26077,
+          "false_positives": 0,
+          "precision": 0.0,
+          "predictions": 0,
+          "recall": 0.0,
+          "support": 26077
+        },
+        "USERNAME": {
+          "exact_matches": 1656,
+          "f1": 0.6244343891402716,
+          "false_negatives": 1174,
+          "false_positives": 818,
+          "precision": 0.6693613581244947,
+          "predictions": 2474,
+          "recall": 0.5851590106007067,
+          "support": 2830
+        }
+      },
+      "precision": 0.5440438034188034,
+      "recall": 0.38494538307442266,
+      "tp": 20369
+    },
+    "English": {
+      "f1": 0.47508603423664675,
+      "fn": 29712,
+      "fp": 17725,
+      "per_entity": {
+        "ADDRESS": {
+          "exact_matches": 1079,
+          "f1": 0.32013054442960986,
+          "false_negatives": 831,
+          "false_positives": 3752,
+          "precision": 0.2233492030635479,
+          "predictions": 4831,
+          "recall": 0.5649214659685864,
+          "support": 1910
+        },
+        "BANK_ACCOUNT": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 30,
+          "precision": 0.0,
+          "predictions": 30,
+          "recall": 0.0,
+          "support": 0
+        },
+        "CREDIT_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 135,
+          "precision": 0.0,
+          "predictions": 135,
+          "recall": 0.0,
+          "support": 0
+        },
+        "DATE_TIME": {
+          "exact_matches": 4964,
+          "f1": 0.7364438839848677,
+          "false_negatives": 503,
+          "false_positives": 3050,
+          "precision": 0.6194160219615673,
+          "predictions": 8014,
+          "recall": 0.9079934150356685,
+          "support": 5467
+        },
+        "EMAIL_ADDRESS": {
+          "exact_matches": 2370,
+          "f1": 0.9136468774094064,
+          "false_negatives": 242,
+          "false_positives": 206,
+          "precision": 0.9200310559006211,
+          "predictions": 2576,
+          "recall": 0.9073506891271057,
+          "support": 2612
+        },
+        "ID_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 1971,
+          "precision": 0.0,
+          "predictions": 1971,
+          "recall": 0.0,
+          "support": 0
+        },
+        "IP_ADDRESS": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 2391,
+          "precision": 0.0,
+          "predictions": 2391,
+          "recall": 0.0,
+          "support": 0
+        },
+        "LOCATION": {
+          "exact_matches": 4995,
+          "f1": 0.8113376106554049,
+          "false_negatives": 589,
+          "false_positives": 1734,
+          "precision": 0.7423094070441373,
+          "predictions": 6729,
+          "recall": 0.8945200573065902,
+          "support": 5584
+        },
+        "ORGANIZATION": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 196,
+          "precision": 0.0,
+          "predictions": 196,
+          "recall": 0.0,
+          "support": 0
+        },
+        "PERSON": {
+          "exact_matches": 4740,
+          "f1": 0.7757139350298666,
+          "false_negatives": 868,
+          "false_positives": 1873,
+          "precision": 0.716769998487827,
+          "predictions": 6613,
+          "recall": 0.8452211126961484,
+          "support": 5608
+        },
+        "PHONE_NUMBER": {
+          "exact_matches": 1321,
+          "f1": 0.7433877321328082,
+          "false_negatives": 676,
+          "false_positives": 236,
+          "precision": 0.8484264611432242,
+          "predictions": 1557,
+          "recall": 0.6614922383575363,
+          "support": 1997
+        },
+        "SOCIAL_IDENTIFIER": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 1369,
+          "precision": 0.0,
+          "predictions": 1369,
+          "recall": 0.0,
+          "support": 0
+        },
+        "UNMAPPED": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 25215,
+          "false_positives": 0,
+          "precision": 0.0,
+          "predictions": 0,
+          "recall": 0.0,
+          "support": 25215
+        },
+        "USERNAME": {
+          "exact_matches": 1998,
+          "f1": 0.7179302910528207,
+          "false_negatives": 788,
+          "false_positives": 782,
+          "precision": 0.718705035971223,
+          "predictions": 2780,
+          "recall": 0.7171572146446519,
+          "support": 2786
+        }
+      },
+      "precision": 0.5477393345580731,
+      "recall": 0.419449383536216,
+      "tp": 21467
+    },
+    "French": {
+      "f1": 0.4587334167709637,
+      "fn": 34539,
+      "fp": 19520,
+      "per_entity": {
+        "ADDRESS": {
+          "exact_matches": 920,
+          "f1": 0.23288191368181244,
+          "false_negatives": 1322,
+          "false_positives": 4739,
+          "precision": 0.16257289273723272,
+          "predictions": 5659,
+          "recall": 0.4103479036574487,
+          "support": 2242
+        },
+        "BANK_ACCOUNT": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 17,
+          "precision": 0.0,
+          "predictions": 17,
+          "recall": 0.0,
+          "support": 0
+        },
+        "CREDIT_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 183,
+          "precision": 0.0,
+          "predictions": 183,
+          "recall": 0.0,
+          "support": 0
+        },
+        "DATE_TIME": {
+          "exact_matches": 5276,
+          "f1": 0.7063391123903875,
+          "false_negatives": 680,
+          "false_positives": 3707,
+          "precision": 0.5873316264054325,
+          "predictions": 8983,
+          "recall": 0.8858294157152451,
+          "support": 5956
+        },
+        "EMAIL_ADDRESS": {
+          "exact_matches": 2514,
+          "f1": 0.9103747963063553,
+          "false_negatives": 272,
+          "false_positives": 223,
+          "precision": 0.9185239313116551,
+          "predictions": 2737,
+          "recall": 0.9023689877961235,
+          "support": 2786
+        },
+        "ID_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 1704,
+          "precision": 0.0,
+          "predictions": 1704,
+          "recall": 0.0,
+          "support": 0
+        },
+        "IP_ADDRESS": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 2995,
+          "precision": 0.0,
+          "predictions": 2995,
+          "recall": 0.0,
+          "support": 0
+        },
+        "LOCATION": {
+          "exact_matches": 5577,
+          "f1": 0.7653355290242898,
+          "false_negatives": 1114,
+          "false_positives": 2306,
+          "precision": 0.7074717747050615,
+          "predictions": 7883,
+          "recall": 0.833507696906292,
+          "support": 6691
+        },
+        "ORGANIZATION": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 223,
+          "precision": 0.0,
+          "predictions": 223,
+          "recall": 0.0,
+          "support": 0
+        },
+        "PERSON": {
+          "exact_matches": 5028,
+          "f1": 0.7567160809692227,
+          "false_negatives": 1192,
+          "false_positives": 2041,
+          "precision": 0.7112745791483944,
+          "predictions": 7069,
+          "recall": 0.8083601286173634,
+          "support": 6220
+        },
+        "PHONE_NUMBER": {
+          "exact_matches": 1526,
+          "f1": 0.739878787878788,
+          "false_negatives": 771,
+          "false_positives": 302,
+          "precision": 0.8347921225382933,
+          "predictions": 1828,
+          "recall": 0.6643447975620375,
+          "support": 2297
+        },
+        "SOCIAL_IDENTIFIER": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 458,
+          "precision": 0.0,
+          "predictions": 458,
+          "recall": 0.0,
+          "support": 0
+        },
+        "UNMAPPED": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 28217,
+          "false_positives": 0,
+          "precision": 0.0,
+          "predictions": 0,
+          "recall": 0.0,
+          "support": 28217
+        },
+        "USERNAME": {
+          "exact_matches": 2067,
+          "f1": 0.7218438973284442,
+          "false_negatives": 971,
+          "false_positives": 622,
+          "precision": 0.7686872443287468,
+          "predictions": 2689,
+          "recall": 0.6803818301514154,
+          "support": 3038
+        }
+      },
+      "precision": 0.5399264636560762,
+      "recall": 0.39876755966369,
+      "tp": 22908
+    },
+    "German": {
+      "f1": 0.47457958545170126,
+      "fn": 32131,
+      "fp": 16235,
+      "per_entity": {
+        "ADDRESS": {
+          "exact_matches": 1195,
+          "f1": 0.4041941484863859,
+          "false_negatives": 667,
+          "false_positives": 2856,
+          "precision": 0.2949888916316959,
+          "predictions": 4051,
+          "recall": 0.6417830290010741,
+          "support": 1862
+        },
+        "BANK_ACCOUNT": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 22,
+          "precision": 0.0,
+          "predictions": 22,
+          "recall": 0.0,
+          "support": 0
+        },
+        "CREDIT_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 131,
+          "precision": 0.0,
+          "predictions": 131,
+          "recall": 0.0,
+          "support": 0
+        },
+        "DATE_TIME": {
+          "exact_matches": 5382,
+          "f1": 0.7178392797599201,
+          "false_negatives": 565,
+          "false_positives": 3666,
+          "precision": 0.5948275862068966,
+          "predictions": 9048,
+          "recall": 0.9049941146796704,
+          "support": 5947
+        },
+        "EMAIL_ADDRESS": {
+          "exact_matches": 2471,
+          "f1": 0.8902900378310215,
+          "false_negatives": 312,
+          "false_positives": 297,
+          "precision": 0.8927023121387283,
+          "predictions": 2768,
+          "recall": 0.8878907653611211,
+          "support": 2783
+        },
+        "ID_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 1121,
+          "precision": 0.0,
+          "predictions": 1121,
+          "recall": 0.0,
+          "support": 0
+        },
+        "IP_ADDRESS": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 2933,
+          "precision": 0.0,
+          "predictions": 2933,
+          "recall": 0.0,
+          "support": 0
+        },
+        "LOCATION": {
+          "exact_matches": 4516,
+          "f1": 0.7750793787007637,
+          "false_negatives": 863,
+          "false_positives": 1758,
+          "precision": 0.7197959834236531,
+          "predictions": 6274,
+          "recall": 0.8395612567391708,
+          "support": 5379
+        },
+        "ORGANIZATION": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 177,
+          "precision": 0.0,
+          "predictions": 177,
+          "recall": 0.0,
+          "support": 0
+        },
+        "PERSON": {
+          "exact_matches": 4682,
+          "f1": 0.7674780755675764,
+          "false_negatives": 1021,
+          "false_positives": 1816,
+          "precision": 0.7205293936595876,
+          "predictions": 6498,
+          "recall": 0.8209714185516395,
+          "support": 5703
+        },
+        "PHONE_NUMBER": {
+          "exact_matches": 1497,
+          "f1": 0.778066528066528,
+          "false_negatives": 603,
+          "false_positives": 251,
+          "precision": 0.8564073226544623,
+          "predictions": 1748,
+          "recall": 0.7128571428571429,
+          "support": 2100
+        },
+        "SOCIAL_IDENTIFIER": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 459,
+          "precision": 0.0,
+          "predictions": 459,
+          "recall": 0.0,
+          "support": 0
+        },
+        "UNMAPPED": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 27201,
+          "false_positives": 0,
+          "precision": 0.0,
+          "predictions": 0,
+          "recall": 0.0,
+          "support": 27201
+        },
+        "USERNAME": {
+          "exact_matches": 2100,
+          "f1": 0.7183170856849667,
+          "false_negatives": 899,
+          "false_positives": 748,
+          "precision": 0.7373595505617978,
+          "predictions": 2848,
+          "recall": 0.7002334111370457,
+          "support": 2999
+        }
+      },
+      "precision": 0.5736383213404065,
+      "recall": 0.40469485307740766,
+      "tp": 21843
+    },
+    "Italian": {
+      "f1": 0.44197052933081216,
+      "fn": 32271,
+      "fp": 17604,
+      "per_entity": {
+        "ADDRESS": {
+          "exact_matches": 829,
+          "f1": 0.26201011378002526,
+          "false_negatives": 1235,
+          "false_positives": 3435,
+          "precision": 0.1944183864915572,
+          "predictions": 4264,
+          "recall": 0.4016472868217054,
+          "support": 2064
+        },
+        "BANK_ACCOUNT": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 33,
+          "precision": 0.0,
+          "predictions": 33,
+          "recall": 0.0,
+          "support": 0
+        },
+        "CREDIT_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 223,
+          "precision": 0.0,
+          "predictions": 223,
+          "recall": 0.0,
+          "support": 0
+        },
+        "DATE_TIME": {
+          "exact_matches": 4569,
+          "f1": 0.6521552954610333,
+          "false_negatives": 1002,
+          "false_positives": 3872,
+          "precision": 0.541286577419737,
+          "predictions": 8441,
+          "recall": 0.8201400107700593,
+          "support": 5571
+        },
+        "EMAIL_ADDRESS": {
+          "exact_matches": 2264,
+          "f1": 0.9116166700221462,
+          "false_negatives": 252,
+          "false_positives": 187,
+          "precision": 0.9237046103631171,
+          "predictions": 2451,
+          "recall": 0.8998410174880763,
+          "support": 2516
+        },
+        "ID_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 970,
+          "precision": 0.0,
+          "predictions": 970,
+          "recall": 0.0,
+          "support": 0
+        },
+        "IP_ADDRESS": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 2596,
+          "precision": 0.0,
+          "predictions": 2596,
+          "recall": 0.0,
+          "support": 0
+        },
+        "LOCATION": {
+          "exact_matches": 4910,
+          "f1": 0.7296775152325754,
+          "false_negatives": 1183,
+          "false_positives": 2455,
+          "precision": 0.6666666666666666,
+          "predictions": 7365,
+          "recall": 0.8058427703922534,
+          "support": 6093
+        },
+        "ORGANIZATION": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 431,
+          "precision": 0.0,
+          "predictions": 431,
+          "recall": 0.0,
+          "support": 0
+        },
+        "PERSON": {
+          "exact_matches": 3957,
+          "f1": 0.6920857017927415,
+          "false_negatives": 1375,
+          "false_positives": 2146,
+          "precision": 0.6483696542683925,
+          "predictions": 6103,
+          "recall": 0.7421230307576894,
+          "support": 5332
+        },
+        "PHONE_NUMBER": {
+          "exact_matches": 1488,
+          "f1": 0.7713841368584758,
+          "false_negatives": 674,
+          "false_positives": 208,
+          "precision": 0.8773584905660378,
+          "predictions": 1696,
+          "recall": 0.6882516188714154,
+          "support": 2162
+        },
+        "SOCIAL_IDENTIFIER": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 329,
+          "precision": 0.0,
+          "predictions": 329,
+          "recall": 0.0,
+          "support": 0
+        },
+        "UNMAPPED": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 25505,
+          "false_positives": 0,
+          "precision": 0.0,
+          "predictions": 0,
+          "recall": 0.0,
+          "support": 25505
+        },
+        "USERNAME": {
+          "exact_matches": 1734,
+          "f1": 0.6628440366972477,
+          "false_negatives": 1045,
+          "false_positives": 719,
+          "precision": 0.7068895230330208,
+          "predictions": 2453,
+          "recall": 0.6239654551997121,
+          "support": 2779
+        }
+      },
+      "precision": 0.5287377861062776,
+      "recall": 0.37966629502902616,
+      "tp": 19751
+    },
+    "Spanish": {
+      "f1": 0.46387144231313304,
+      "fn": 31097,
+      "fp": 16278,
+      "per_entity": {
+        "ADDRESS": {
+          "exact_matches": 752,
+          "f1": 0.25422582826233947,
+          "false_negatives": 1123,
+          "false_positives": 3289,
+          "precision": 0.18609255134867608,
+          "predictions": 4041,
+          "recall": 0.4010666666666667,
+          "support": 1875
+        },
+        "BANK_ACCOUNT": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 7,
+          "precision": 0.0,
+          "predictions": 7,
+          "recall": 0.0,
+          "support": 0
+        },
+        "CREDIT_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 112,
+          "precision": 0.0,
+          "predictions": 112,
+          "recall": 0.0,
+          "support": 0
+        },
+        "DATE_TIME": {
+          "exact_matches": 5017,
+          "f1": 0.6736488754615643,
+          "false_negatives": 910,
+          "false_positives": 3951,
+          "precision": 0.5594335414808207,
+          "predictions": 8968,
+          "recall": 0.8464653281592711,
+          "support": 5927
+        },
+        "EMAIL_ADDRESS": {
+          "exact_matches": 2243,
+          "f1": 0.9017085427135679,
+          "false_negatives": 305,
+          "false_positives": 184,
+          "precision": 0.9241862381540997,
+          "predictions": 2427,
+          "recall": 0.880298273155416,
+          "support": 2548
+        },
+        "ID_CARD": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 1650,
+          "precision": 0.0,
+          "predictions": 1650,
+          "recall": 0.0,
+          "support": 0
+        },
+        "IP_ADDRESS": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 2323,
+          "precision": 0.0,
+          "predictions": 2323,
+          "recall": 0.0,
+          "support": 0
+        },
+        "LOCATION": {
+          "exact_matches": 4976,
+          "f1": 0.806352292983309,
+          "false_negatives": 620,
+          "false_positives": 1770,
+          "precision": 0.7376222946931515,
+          "predictions": 6746,
+          "recall": 0.8892065761258041,
+          "support": 5596
+        },
+        "ORGANIZATION": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 344,
+          "precision": 0.0,
+          "predictions": 344,
+          "recall": 0.0,
+          "support": 0
+        },
+        "PERSON": {
+          "exact_matches": 4136,
+          "f1": 0.7680594243268338,
+          "false_negatives": 1118,
+          "false_positives": 1380,
+          "precision": 0.7498187092095722,
+          "predictions": 5516,
+          "recall": 0.7872097449562239,
+          "support": 5254
+        },
+        "PHONE_NUMBER": {
+          "exact_matches": 1362,
+          "f1": 0.7628115373844861,
+          "false_negatives": 658,
+          "false_positives": 189,
+          "precision": 0.8781431334622823,
+          "predictions": 1551,
+          "recall": 0.6742574257425743,
+          "support": 2020
+        },
+        "SOCIAL_IDENTIFIER": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 0,
+          "false_positives": 366,
+          "precision": 0.0,
+          "predictions": 366,
+          "recall": 0.0,
+          "support": 0
+        },
+        "UNMAPPED": {
+          "exact_matches": 0,
+          "f1": 0.0,
+          "false_negatives": 25600,
+          "false_positives": 0,
+          "precision": 0.0,
+          "predictions": 0,
+          "recall": 0.0,
+          "support": 25600
+        },
+        "USERNAME": {
+          "exact_matches": 2009,
+          "f1": 0.7313432835820896,
+          "false_negatives": 763,
+          "false_positives": 713,
+          "precision": 0.7380602498163116,
+          "predictions": 2722,
+          "recall": 0.7247474747474747,
+          "support": 2772
+        }
+      },
+      "precision": 0.5573382644875317,
+      "recall": 0.39725151186230423,
+      "tp": 20495
+    }
+  },
+  "gateway_ontology": {
+    "f1": 0.46088075088027847,
+    "fn": 192295,
+    "fp": 104433,
+    "per_entity": {
+      "ADDRESS": {
+        "exact_matches": 5731,
+        "f1": 0.2910984126984127,
+        "false_negatives": 6229,
+        "false_positives": 21684,
+        "precision": 0.20904614262265184,
+        "predictions": 27415,
+        "recall": 0.47918060200668894,
+        "support": 11960
+      },
+      "BANK_ACCOUNT": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 126,
+        "precision": 0.0,
+        "predictions": 126,
+        "recall": 0.0,
+        "support": 0
+      },
+      "CREDIT_CARD": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 880,
+        "precision": 0.0,
+        "predictions": 880,
+        "recall": 0.0,
+        "support": 0
+      },
+      "DATE_TIME": {
+        "exact_matches": 30434,
+        "f1": 0.7041484463570948,
+        "false_negatives": 4316,
+        "false_positives": 21258,
+        "precision": 0.5887564806933374,
+        "predictions": 51692,
+        "recall": 0.8757985611510791,
+        "support": 34750
+      },
+      "EMAIL_ADDRESS": {
+        "exact_matches": 14211,
+        "f1": 0.9044103608477058,
+        "false_negatives": 1669,
+        "false_positives": 1335,
+        "precision": 0.9141258201466615,
+        "predictions": 15546,
+        "recall": 0.8948992443324937,
+        "support": 15880
+      },
+      "ID_CARD": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 7950,
+        "precision": 0.0,
+        "predictions": 7950,
+        "recall": 0.0,
+        "support": 0
+      },
+      "IP_ADDRESS": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 15608,
+        "precision": 0.0,
+        "predictions": 15608,
+        "recall": 0.0,
+        "support": 0
+      },
+      "LOCATION": {
+        "exact_matches": 29528,
+        "f1": 0.7634511466763192,
+        "false_negatives": 5496,
+        "false_positives": 12802,
+        "precision": 0.6975667375383888,
+        "predictions": 42330,
+        "recall": 0.8430790315212425,
+        "support": 35024
+      },
+      "ORGANIZATION": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 1776,
+        "precision": 0.0,
+        "predictions": 1776,
+        "recall": 0.0,
+        "support": 0
+      },
+      "PERSON": {
+        "exact_matches": 26835,
+        "f1": 0.7405312176612626,
+        "false_negatives": 7061,
+        "false_positives": 11744,
+        "precision": 0.6955856813292206,
+        "predictions": 38579,
+        "recall": 0.7916863346707577,
+        "support": 33896
+      },
+      "PHONE_NUMBER": {
+        "exact_matches": 8530,
+        "f1": 0.7570781929528713,
+        "false_negatives": 4069,
+        "false_positives": 1405,
+        "precision": 0.8585807750377453,
+        "predictions": 9935,
+        "recall": 0.6770378601476308,
+        "support": 12599
+      },
+      "SOCIAL_IDENTIFIER": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 3463,
+        "precision": 0.0,
+        "predictions": 3463,
+        "recall": 0.0,
+        "support": 0
+      },
+      "UNMAPPED": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 157815,
+        "false_positives": 0,
+        "precision": 0.0,
+        "predictions": 0,
+        "recall": 0.0,
+        "support": 157815
+      },
+      "USERNAME": {
+        "exact_matches": 11564,
+        "f1": 0.6972565571299367,
+        "false_negatives": 5640,
+        "false_positives": 4402,
+        "precision": 0.7242891143680321,
+        "predictions": 15966,
+        "recall": 0.6721692629621019,
+        "support": 17204
+      }
+    },
+    "precision": 0.548429081663539,
+    "recall": 0.39743613847735076,
+    "tp": 126833
+  },
+  "identity": {
+    "model": {
+      "dtype": "fp32",
+      "encoder": "microsoft/deberta-v3-large",
+      "gliner": "0.2.29",
+      "max_len": 384,
+      "max_width": 24,
+      "model_id": "nvidia/gliner-PII",
+      "model_revision": "bd23e8ef4425fd04e34c5204ab49ffaa706eae79",
+      "parameters": 445463040,
+      "span_mode": "markerV0",
+      "torch": "2.10.0+cu128",
+      "transformers": "5.16.1",
+      "words_splitter_type": "whitespace"
+    },
+    "normalized_sha256": "575c7105a3ad5d27cbea7a467bebc360b08edfcdebadd71a45d5962a12472fca",
+    "protocol": {
+      "batch_size": 1,
+      "email_hybrid": "not_run",
+      "max_width": 24,
+      "thresholds": [
+        0.3,
+        0.7
+      ]
+    }
+  },
+  "identity_sha256": "05a08e35fa5086d5943032e32cfd645d82c447d49fc44e3411b6ea8f3128b62b",
+  "native_label_space": {
+    "f1": 0.5207680474047063,
+    "fn": 42493,
+    "fp": 176193,
+    "per_entity": {
+      "account_number": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 87,
+        "precision": 0.0,
+        "predictions": 87,
+        "recall": 0.0,
+        "support": 0
+      },
+      "age": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 651,
+        "precision": 0.0,
+        "predictions": 651,
+        "recall": 0.0,
+        "support": 0
+      },
+      "api_key": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 23,
+        "precision": 0.0,
+        "predictions": 23,
+        "recall": 0.0,
+        "support": 0
+      },
+      "bank_routing_number": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 9,
+        "precision": 0.0,
+        "predictions": 9,
+        "recall": 0.0,
+        "support": 0
+      },
+      "biometric_identifier": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 398,
+        "precision": 0.0,
+        "predictions": 398,
+        "recall": 0.0,
+        "support": 0
+      },
+      "blood_type": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 43,
+        "precision": 0.0,
+        "predictions": 43,
+        "recall": 0.0,
+        "support": 0
+      },
+      "certificate_license_number": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 5881,
+        "precision": 0.0,
+        "predictions": 5881,
+        "recall": 0.0,
+        "support": 0
+      },
+      "city": {
+        "exact_matches": 9897,
+        "f1": 0.6971682163989857,
+        "false_negatives": 2464,
+        "false_positives": 6134,
+        "precision": 0.61736635269166,
+        "predictions": 16031,
+        "recall": 0.800663376749454,
+        "support": 12361
+      },
+      "company_name": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 1776,
+        "precision": 0.0,
+        "predictions": 1776,
+        "recall": 0.0,
+        "support": 0
+      },
+      "coordinate": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 2147,
+        "precision": 0.0,
+        "predictions": 2147,
+        "recall": 0.0,
+        "support": 0
+      },
+      "country": {
+        "exact_matches": 8721,
+        "f1": 0.7643630308076602,
+        "false_negatives": 1970,
+        "false_positives": 3407,
+        "precision": 0.7190798153034301,
+        "predictions": 12128,
+        "recall": 0.8157328594144607,
+        "support": 10691
+      },
+      "county": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 346,
+        "precision": 0.0,
+        "predictions": 346,
+        "recall": 0.0,
+        "support": 0
+      },
+      "credit_debit_card": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 145,
+        "precision": 0.0,
+        "predictions": 145,
+        "recall": 0.0,
+        "support": 0
+      },
+      "customer_id": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 499,
+        "precision": 0.0,
+        "predictions": 499,
+        "recall": 0.0,
+        "support": 0
+      },
+      "cvv": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 735,
+        "precision": 0.0,
+        "predictions": 735,
+        "recall": 0.0,
+        "support": 0
+      },
+      "date": {
+        "exact_matches": 7547,
+        "f1": 0.6104505378953328,
+        "false_negatives": 3187,
+        "false_positives": 6445,
+        "precision": 0.539379645511721,
+        "predictions": 13992,
+        "recall": 0.7030929755915781,
+        "support": 10734
+      },
+      "date_of_birth": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 9823,
+        "precision": 0.0,
+        "predictions": 9823,
+        "recall": 0.0,
+        "support": 0
+      },
+      "date_time": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 3970,
+        "precision": 0.0,
+        "predictions": 3970,
+        "recall": 0.0,
+        "support": 0
+      },
+      "device_identifier": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 16,
+        "precision": 0.0,
+        "predictions": 16,
+        "recall": 0.0,
+        "support": 0
+      },
+      "education_level": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 2803,
+        "precision": 0.0,
+        "predictions": 2803,
+        "recall": 0.0,
+        "support": 0
+      },
+      "email": {
+        "exact_matches": 14211,
+        "f1": 0.9044103608477058,
+        "false_negatives": 1669,
+        "false_positives": 1335,
+        "precision": 0.9141258201466615,
+        "predictions": 15546,
+        "recall": 0.8948992443324937,
+        "support": 15880
+      },
+      "employee_id": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 273,
+        "precision": 0.0,
+        "predictions": 273,
+        "recall": 0.0,
+        "support": 0
+      },
+      "employment_status": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 1198,
+        "precision": 0.0,
+        "predictions": 1198,
+        "recall": 0.0,
+        "support": 0
+      },
+      "fax_number": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 240,
+        "precision": 0.0,
+        "predictions": 240,
+        "recall": 0.0,
+        "support": 0
+      },
+      "first_name": {
+        "exact_matches": 11472,
+        "f1": 0.6215359609914669,
+        "false_negatives": 4488,
+        "false_positives": 9483,
+        "precision": 0.5474588403722263,
+        "predictions": 20955,
+        "recall": 0.718796992481203,
+        "support": 15960
+      },
+      "gender": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 8167,
+        "precision": 0.0,
+        "predictions": 8167,
+        "recall": 0.0,
+        "support": 0
+      },
+      "health_plan_beneficiary_number": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 6,
+        "precision": 0.0,
+        "predictions": 6,
+        "recall": 0.0,
+        "support": 0
+      },
+      "http_cookie": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 53,
+        "precision": 0.0,
+        "predictions": 53,
+        "recall": 0.0,
+        "support": 0
+      },
+      "ipv4": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 10924,
+        "precision": 0.0,
+        "predictions": 10924,
+        "recall": 0.0,
+        "support": 0
+      },
+      "ipv6": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 4684,
+        "precision": 0.0,
+        "predictions": 4684,
+        "recall": 0.0,
+        "support": 0
+      },
+      "language": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 1090,
+        "precision": 0.0,
+        "predictions": 1090,
+        "recall": 0.0,
+        "support": 0
+      },
+      "last_name": {
+        "exact_matches": 10691,
+        "f1": 0.6012935883014622,
+        "false_negatives": 7245,
+        "false_positives": 6933,
+        "precision": 0.6066159782115297,
+        "predictions": 17624,
+        "recall": 0.5960637823371989,
+        "support": 17936
+      },
+      "license_plate": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 623,
+        "precision": 0.0,
+        "predictions": 623,
+        "recall": 0.0,
+        "support": 0
+      },
+      "mac_address": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 110,
+        "precision": 0.0,
+        "predictions": 110,
+        "recall": 0.0,
+        "support": 0
+      },
+      "medical_record_number": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 190,
+        "precision": 0.0,
+        "predictions": 190,
+        "recall": 0.0,
+        "support": 0
+      },
+      "national_id": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 7178,
+        "precision": 0.0,
+        "predictions": 7178,
+        "recall": 0.0,
+        "support": 0
+      },
+      "occupation": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 24006,
+        "precision": 0.0,
+        "predictions": 24006,
+        "recall": 0.0,
+        "support": 0
+      },
+      "password": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 7526,
+        "precision": 0.0,
+        "predictions": 7526,
+        "recall": 0.0,
+        "support": 0
+      },
+      "phone_number": {
+        "exact_matches": 8299,
+        "f1": 0.7445052480488025,
+        "false_negatives": 4300,
+        "false_positives": 1396,
+        "precision": 0.8560082516761217,
+        "predictions": 9695,
+        "recall": 0.658703071672355,
+        "support": 12599
+      },
+      "pin": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 3016,
+        "precision": 0.0,
+        "predictions": 3016,
+        "recall": 0.0,
+        "support": 0
+      },
+      "political_view": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 249,
+        "precision": 0.0,
+        "predictions": 249,
+        "recall": 0.0,
+        "support": 0
+      },
+      "postcode": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 10187,
+        "precision": 0.0,
+        "predictions": 10187,
+        "recall": 0.0,
+        "support": 0
+      },
+      "race_ethnicity": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 1081,
+        "precision": 0.0,
+        "predictions": 1081,
+        "recall": 0.0,
+        "support": 0
+      },
+      "religious_belief": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 85,
+        "precision": 0.0,
+        "predictions": 85,
+        "recall": 0.0,
+        "support": 0
+      },
+      "sexuality": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 236,
+        "precision": 0.0,
+        "predictions": 236,
+        "recall": 0.0,
+        "support": 0
+      },
+      "ssn": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 3223,
+        "precision": 0.0,
+        "predictions": 3223,
+        "recall": 0.0,
+        "support": 0
+      },
+      "state": {
+        "exact_matches": 10063,
+        "f1": 0.8509936575052853,
+        "false_negatives": 1909,
+        "false_positives": 1615,
+        "precision": 0.861705771536222,
+        "predictions": 11678,
+        "recall": 0.8405446040761777,
+        "support": 11972
+      },
+      "street_address": {
+        "exact_matches": 5730,
+        "f1": 0.3926271070302864,
+        "false_negatives": 6230,
+        "false_positives": 11498,
+        "precision": 0.3325980961225911,
+        "predictions": 17228,
+        "recall": 0.4790969899665552,
+        "support": 11960
+      },
+      "swift_bic": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 30,
+        "precision": 0.0,
+        "predictions": 30,
+        "recall": 0.0,
+        "support": 0
+      },
+      "tax_id": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 44,
+        "precision": 0.0,
+        "predictions": 44,
+        "recall": 0.0,
+        "support": 0
+      },
+      "time": {
+        "exact_matches": 20625,
+        "f1": 0.8607557957556914,
+        "false_negatives": 3391,
+        "false_positives": 3282,
+        "precision": 0.8627180323754549,
+        "predictions": 23907,
+        "recall": 0.8588024650233178,
+        "support": 24016
+      },
+      "unique_id": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 6334,
+        "precision": 0.0,
+        "predictions": 6334,
+        "recall": 0.0,
+        "support": 0
+      },
+      "url": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 75,
+        "precision": 0.0,
+        "predictions": 75,
+        "recall": 0.0,
+        "support": 0
+      },
+      "user_name": {
+        "exact_matches": 11564,
+        "f1": 0.6972565571299367,
+        "false_negatives": 5640,
+        "false_positives": 4402,
+        "precision": 0.7242891143680321,
+        "predictions": 15966,
+        "recall": 0.6721692629621019,
+        "support": 17204
+      },
+      "vehicle_identifier": {
+        "exact_matches": 0,
+        "f1": 0.0,
+        "false_negatives": 0,
+        "false_positives": 83,
+        "precision": 0.0,
+        "predictions": 83,
+        "recall": 0.0,
+        "support": 0
+      }
+    },
+    "precision": 0.4027619121869206,
+    "recall": 0.7365804367905873,
+    "tp": 118820
+  },
+  "privacy": "aggregate-only; no source text or entity values",
+  "threshold": 0.7,
+  "unmapped_unsupported_ground_truth": {
+    "ground_truth": 157815
+  }
+}

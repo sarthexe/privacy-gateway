@@ -14,3 +14,31 @@ mtime_ms = 1790960868786
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/a19e1540-0aec-46ea-8627-2ffbcff685d5/9adff3db-e4c7-4a72-be06-719679a8e6e2"
 storage_version_token = "1790960870533109"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "Oqsv3zpdIJdO7-pBBvEij"
+uri = "file://.local/outputs/phase15-ood-root-cause.html"
+type = "html"
+title = "Phase 1.5 OOD root-cause report"
+description = "Complete inventories, per-type FN/FP partitions, coverage effects, span and threshold tables, root-cause summary, and two unimplemented experiments. No plaintext PII."
+logical_id = "d3749eab-76b7-4760-8d6a-f27829af76b5"
+content_hash = "sha256:6ec53f5c760a32c992ee3eebba3d078b659c51fdeeea6ee76b5cb369761e8ce8"
+size = 90724
+mtime_ms = 1790962740323
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/d3749eab-76b7-4760-8d6a-f27829af76b5/c1485e65-a4ab-488d-ac8e-b0af196135cd"
+storage_version_token = "1790962861923875"
+content_type = "text/html"
+
+[[outputs]]
+id = "lSXci9sBvlAR0jarSZMGg"
+uri = "file://.local/outputs/phase15-ood-root-cause.json"
+type = "unspecified"
+title = "OOD root-cause evidence — JSON"
+description = "Machine-readable aggregate evidence for all seven supported types across all six conditions, with definitions and provenance."
+logical_id = "04dd2634-8d18-45d9-ba61-d7b5881b4c89"
+content_hash = "sha256:4262cab31e9e6fca46fafbb3dc7f44bca3f550daaa8c69688af59f0a3ba08382"
+size = 119442
+mtime_ms = 1790962740325
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/04dd2634-8d18-45d9-ba61-d7b5881b4c89/5138dd10-8f77-42b0-889f-2bf014553c78"
+storage_version_token = "1790962863369836"
+content_type = "application/octet-stream"

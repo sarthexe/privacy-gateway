@@ -1,0 +1,182 @@
+We now have the exact reconstructed OOD datasets and successfully reran all six offline analyzer conditions.
+
+Do NOT run GLiNER inference.
+Do NOT change the model.
+Do NOT change threshold.
+Do NOT change max_width.
+Do NOT modify persisted predictions.
+
+The goal of this task is ROOT-CAUSE DIAGNOSIS only.
+
+Current benchmark results show:
+- AI4Privacy supported-only F1: 0.700216 @0.3, 0.714256 @0.7
+- Gretel supported-only F1: 0.736092 @0.3, 0.748835 @0.7
+- Argilla supported-only F1: 0.777997 @0.3, 0.801127 @0.7
+
+The threshold effect is relatively small, so we now need to determine what is actually causing the remaining errors.
+
+Use the reconstructed normalized datasets and the existing persisted predictions/error reports.
+
+STEP 1 — Establish supported-type error inventory
+
+For each dataset and threshold, produce a table for ONLY the seven gateway-supported types:
+
+- PERSON
+- EMAIL_ADDRESS
+- PHONE_NUMBER
+- CREDIT_CARD
+- IP_ADDRESS
+- DATE_TIME
+- LOCATION
+
+For every type report:
+- GT count
+- TP
+- FN
+- FP
+- precision
+- recall
+- F1
+- FN percentage
+- FP percentage
+
+Clearly flag types with:
+- zero GT support
+- very low GT support
+
+Do not interpret a prediction against a zero-GT type as proof of detector failure. Label it explicitly as `no_gt_support`.
+
+STEP 2 — Separate genuine detector errors from annotation-coverage effects
+
+For each dataset, calculate:
+
+- supported types with GT support
+- supported types with zero GT support
+- TP/FN originating from supported GT
+- FPs for supported prediction types that have zero GT support
+
+Add a clear diagnostic category:
+
+`prediction_type_has_zero_gt_support`
+
+Do NOT change the existing strict metrics. This is an additional diagnostic view.
+
+STEP 3 — Analyze FN root causes
+
+For supported GT entities, break FN into:
+- detector miss
+- span mismatch
+- supported-type confusion
+- other existing categories
+
+For each supported type, report these counts.
+
+Focus particularly on:
+- AI4Privacy PERSON
+- AI4Privacy DATE_TIME
+- AI4Privacy LOCATION
+- Gretel PHONE_NUMBER / DATE_TIME
+- Argilla CREDIT_CARD
+
+These are currently prominent supported-type FN contributors.
+
+STEP 4 — Analyze FP root causes
+
+For supported predictions, separate:
+- detector/recognizer FP
+- span mismatch FP
+- type-confusion FP
+- prediction type has zero GT support
+
+For each supported type, report the counts.
+
+This distinction is especially important for AI4Privacy because IP_ADDRESS and CREDIT_CARD have zero GT support.
+
+STEP 5 — Analyze span behavior
+
+Using the existing overlap/boundary diagnostics, quantify per supported type:
+
+- prediction contained by GT
+- GT contained by prediction
+- partial overlap
+- exact match
+
+Report the counts without writing any plaintext PII values or text snippets.
+
+STEP 6 — Analyze threshold behavior
+
+Compare 0.3 vs 0.7 for each supported type and classify the threshold effect:
+
+- precision gain
+- recall loss
+- F1 change
+- FP reduction
+- FN increase
+
+Do not recommend another threshold.
+
+STEP 7 — Produce a root-cause summary
+
+Create a final table:
+
+Dataset | Type | Main FN cause | Main FP cause | Zero-GT issue? | Span issue? | Confusion issue?
+
+Then provide a concise dataset-level summary.
+
+The summary must distinguish factual observations from hypotheses.
+
+For example:
+
+`Observed: AI4Privacy LOCATION has substantially more FP than FN.`
+`Observed: many AI4Privacy IP_ADDRESS predictions have zero corresponding GT support.`
+`Hypothesis: this may reflect annotation coverage rather than detector hallucination.`
+
+Do not present hypotheses as facts.
+
+STEP 8 — Identify the next engineering experiment, but DO NOT implement it.
+
+Based only on the evidence gathered, propose at most 2 concrete detector experiments.
+
+Examples of the type of output wanted:
+- hybrid deterministic recognizer for a specific entity type
+- model + rule combination
+- post-processing strategy
+- span-selection strategy
+- ontology/type restriction
+
+Do not implement either experiment.
+Do not change production code.
+
+Checkpoint requirements:
+
+CHECKPOINT 1/5 — Error inventory complete
+Report dataset/type counts and zero-GT types.
+
+CHECKPOINT 2/5 — FN diagnosis complete
+Report main supported FN causes.
+
+CHECKPOINT 3/5 — FP diagnosis complete
+Report main supported FP causes and zero-GT prediction effects.
+
+CHECKPOINT 4/5 — Span and threshold analysis complete
+Report boundary behavior and 0.3 vs 0.7 changes.
+
+CHECKPOINT 5/5 — Root-cause report complete
+Provide:
+- final diagnostic tables
+- evidence-based conclusions
+- clearly separated hypotheses
+- at most 2 proposed next experiments
+- exact commands
+- elapsed time
+- confirmation that no inference or code/model changes were made
+
+For long-running commands:
+- announce start
+- report measurable progress
+- include elapsed time
+- provide ETA only after enough runtime exists to estimate it
+- never invent ETA
+
+Do not commit changes unless a documentation/report file is genuinely necessary. Prefer producing the diagnostic output without modifying the repository.
+High

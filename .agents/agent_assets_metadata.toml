@@ -42,3 +42,31 @@ mtime_ms = 1790962740325
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/04dd2634-8d18-45d9-ba61-d7b5881b4c89/5138dd10-8f77-42b0-889f-2bf014553c78"
 storage_version_token = "1790962863369836"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "GJ1Erfsq7P37ckhnLqyV1"
+uri = "file://.local/outputs/phone-hybrid-experiment.html"
+type = "html"
+title = "Offline PHONE_NUMBER hybrid — complete report"
+description = "All six baseline/hybrid comparisons, full and supported strict metrics, phone results, candidate validation, invariants, commands and limitations."
+logical_id = "4a8b0007-cbde-4c8a-9912-84f09b40e546"
+content_hash = "sha256:929b5e02ef1308a213a5272c39225e49552834f7bf8acaf2ffeebe960cb7a855"
+size = 25687
+mtime_ms = 1790965476334
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/4a8b0007-cbde-4c8a-9912-84f09b40e546/49a2a583-6072-4559-be6e-3afa2ad64cf0"
+storage_version_token = "1790965591654240"
+content_type = "text/html"
+
+[[outputs]]
+id = "1t-sbTmFOwYtlS23Ylbij"
+uri = "file://.local/outputs/phone-hybrid-experiment.json"
+type = "unspecified"
+title = "PHONE_NUMBER hybrid — aggregate evidence JSON"
+description = "Unrounded metrics and deltas, raw/validated candidate counts, boundary diagnostics, regression checks and provenance. No plaintext PII or offsets."
+logical_id = "471580e6-8ef0-496b-bfd9-fa34e8090f1e"
+content_hash = "sha256:f616082ca11cd72f7cc184f1979a3519edb392b974fe23fed011aad71ba1114f"
+size = 37558
+mtime_ms = 1790965476602
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/471580e6-8ef0-496b-bfd9-fa34e8090f1e/10fa32e7-9e95-4292-850d-395cda6614ae"
+storage_version_token = "1790965592976232"
+content_type = "application/octet-stream"

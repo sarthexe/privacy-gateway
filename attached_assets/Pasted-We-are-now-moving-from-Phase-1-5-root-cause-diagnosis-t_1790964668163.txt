@@ -1,0 +1,301 @@
+We are now moving from Phase 1.5 root-cause diagnosis to the FIRST controlled detector experiment.
+
+Experiment:
+PHONE_NUMBER deterministic-parser hybrid.
+
+IMPORTANT:
+This is an OFFLINE EXPERIMENT ONLY.
+Do NOT modify production detection behavior.
+Do NOT change GLiNER.
+Do NOT run GLiNER inference.
+Do NOT change threshold.
+Do NOT change max_width.
+Do NOT modify persisted prediction artifacts.
+Do NOT modify the existing strict scorer.
+
+Evidence motivating this experiment:
+- PHONE_NUMBER F1 decreases from threshold 0.3 to 0.7 on all three OOD datasets.
+- AI4Privacy no-overlap PHONE_NUMBER FN at 0.7: 2,846
+- Gretel no-overlap PHONE_NUMBER FN at 0.7: 127
+- Argilla no-overlap PHONE_NUMBER FN at 0.7: 11
+- The root-cause analysis indicates detector misses are a meaningful FN category.
+
+Goal:
+Test whether a deterministic phone candidate generator/parser can recover PHONE_NUMBER misses or improve boundaries while preserving the existing GLiNER predictions for every other entity type.
+
+INPUTS
+
+Use:
+- the exact reconstructed normalized OOD datasets from the previous step
+- the existing persisted GLiNER predictions at thresholds 0.3 and 0.7
+
+Datasets:
+- AI4Privacy validation
+- Gretel test
+- Argilla train
+
+The existing persisted predictions are the ONLY model predictions allowed.
+
+STEP 1 — Create an isolated experiment
+
+Create something like:
+
+`scripts/gliner_phone_hybrid_experiment.py`
+
+and corresponding tests:
+
+`tests/test_gliner_phone_hybrid_experiment.py`
+
+Do not put the experiment into production detector code.
+
+The experiment must:
+1. Load the existing normalized dataset.
+2. Load the existing persisted GLiNER predictions.
+3. Generate deterministic PHONE_NUMBER candidates from the original text.
+4. Validate candidates with a phone-number parser.
+5. Merge only PHONE_NUMBER predictions into the GLiNER result.
+6. Leave all non-PHONE_NUMBER GLiNER predictions unchanged.
+7. Run the existing strict scorer.
+
+STEP 2 — Deterministic candidate generation
+
+Use a well-maintained phone parsing library if it already exists in the environment; otherwise add the dependency ONLY to the experiment environment/configuration if repository conventions allow it.
+
+Preferred library:
+`phonenumbers`
+
+Do not infer geographic region from:
+- language
+- dataset name
+- surrounding prose
+- model prediction type
+
+Region handling must be explicit and documented.
+
+Use a clearly defined policy such as:
+- numbers containing an explicit international country calling code may be parsed region-independently
+- national/local numbers may only be parsed when an explicitly configured region is supplied
+- never silently guess a region
+
+Make the region policy configurable.
+
+Do NOT silently use the current machine locale, OS locale, or language detection.
+
+STEP 3 — Candidate validation
+
+For each candidate:
+- preserve exact original `[start,end)` offsets
+- normalize only for parser validation
+- never alter the source text
+- require parser validation according to the experiment's documented rules
+- reject obviously invalid candidates
+- deduplicate exact `(start,end)` candidates
+
+Keep both:
+- raw candidate span
+- validated candidate span
+
+so the experiment can distinguish extraction failures from parser validation failures.
+
+STEP 4 — Boundary handling
+
+The root-cause analysis indicates boundary errors matter for PHONE_NUMBER.
+
+For each candidate, determine whether its boundaries:
+- exactly match a PHONE_NUMBER GT span
+- are contained by GT
+- contain GT
+- partially overlap GT
+- match no PHONE_NUMBER GT
+
+Do NOT export plaintext phone numbers, snippets, or raw offsets in reports.
+
+Only export aggregate counts.
+
+STEP 5 — Hybrid merge policy
+
+The hybrid should be deliberately conservative.
+
+Start with:
+- existing GLiNER predictions unchanged
+- add validated deterministic PHONE_NUMBER predictions only when they do not exactly duplicate an existing prediction
+- do not remove non-PHONE_NUMBER predictions
+- do not rewrite other entity types
+- do not perform broad overlap suppression yet
+
+Also test a second clearly separated experimental variant if needed:
+
+Variant A:
+`gliner_plus_validated_phone_candidates`
+
+Variant B:
+`gliner_phone_candidate_arbitration`
+
+For Variant B, only arbitrate when a deterministic phone candidate directly overlaps a conflicting prediction and the arbitration rule is explicit and deterministic.
+
+Do NOT silently invent arbitration rules.
+
+STEP 6 — Evaluate at both existing thresholds
+
+Run the hybrid experiment at:
+- threshold 0.3
+- threshold 0.7
+
+for:
+- AI4Privacy
+- Gretel
+- Argilla
+
+No threshold search.
+
+For each condition report:
+
+BASELINE:
+- precision
+- recall
+- F1
+- TP
+- FP
+- FN
+
+HYBRID:
+- precision
+- recall
+- F1
+- TP
+- FP
+- FN
+
+DELTA:
+- ΔTP
+- ΔFP
+- ΔFN
+- Δprecision
+- Δrecall
+- ΔF1
+
+Also report PHONE_NUMBER-specific:
+- baseline TP/FP/FN
+- hybrid TP/FP/FN
+- PHONE_NUMBER F1 delta
+- candidate count
+- validated candidate count
+- candidate exact-match count
+- candidate contained-by-GT count
+- GT-contained-by-candidate count
+- partial-overlap count
+- no-GT-overlap count
+
+STEP 7 — Regression protection
+
+Because this is a hybrid experiment, explicitly verify that every non-PHONE_NUMBER prediction is unchanged.
+
+Report:
+- number of baseline predictions
+- number of hybrid predictions
+- number of added predictions
+- number of removed predictions
+- number of changed non-PHONE_NUMBER predictions
+
+Expected:
+- removed predictions = 0
+- changed non-PHONE_NUMBER predictions = 0
+
+If this invariant fails, stop and fix the experiment.
+
+STEP 8 — Test design
+
+Add deterministic unit tests for:
+- exact international phone match
+- invalid phone rejected
+- duplicate candidate deduplication
+- exact boundary preservation
+- explicit region handling
+- no implicit locale/region inference
+- overlap classification
+- candidate does not modify non-phone predictions
+- exact duplicate model prediction is not added twice
+- malformed input fails safely
+
+Tests must not contain real people's phone numbers.
+Use obviously synthetic fixtures.
+
+STEP 9 — Checkpoint reporting
+
+Before starting:
+
+CHECKPOINT 1/5 — Phone hybrid setup
+Report:
+- branch/commit
+- files inspected
+- experiment files to be added
+- dependency availability
+- exact evaluation inputs
+- exact region policy
+
+After implementation:
+
+CHECKPOINT 2/5 — Candidate generator complete
+Report:
+- candidate extraction approach
+- parser validation rules
+- region handling
+- files changed
+
+After tests:
+
+CHECKPOINT 3/5 — Experiment tests complete
+Report:
+- test count
+- pass/fail
+- elapsed time
+
+During dataset evaluation:
+
+For each dataset:
+
+CHECKPOINT — <dataset> phone hybrid evaluation started
+
+Then:
+
+CHECKPOINT — <dataset> phone hybrid evaluation complete
+Report:
+- threshold 0.3 metrics
+- threshold 0.7 metrics
+- PHONE_NUMBER delta
+- elapsed time
+
+If execution is long enough:
+- report measured progress
+- report elapsed time
+- provide ETA only after enough runtime exists to estimate it
+- never invent ETA
+
+Then:
+
+CHECKPOINT 4/5 — All hybrid evaluations complete
+
+Finally:
+
+CHECKPOINT 5/5 — Experiment analysis complete
+
+Final response must contain:
+
+1. Exact files changed.
+2. Exact commands executed.
+3. Test results.
+4. Baseline vs hybrid comparison for all six conditions.
+5. PHONE_NUMBER-specific results.
+6. Candidate validation statistics.
+7. Regression/invariant results.
+8. Any warnings or limitations.
+9. A factual interpretation of whether the experiment recovered FN, introduced FP, or mainly affected boundaries.
+10. Whether the evidence justifies proceeding to a second PHONE_NUMBER variant.
+
+Do NOT implement a second variant unless the evidence requires it.
+Do NOT implement the CREDIT_CARD experiment yet.
+Do NOT modify production code.
+
+No commit is required unless the experiment infrastructure itself is intentionally being kept in the repository. If files are added, leave them uncommitted and report the diff for review first.
+
+High

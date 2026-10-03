@@ -66,18 +66,39 @@ not benchmark-specific annotation matching or production changes.
 Keep decisions deterministic and generic, verify append-only preservation and
 frozen input bytes, and leave new experiments uncommitted for review.
 
-## Final anchored date/time experiment scope
+## Closed date/time experiments
 
-The previous DATE_TIME experiment is frozen as an offline mixed result. The
-final anchored variant may evaluate one-to-one replacements in a temporary
-scoring view, but must preserve original records separately and never mutate
-persisted predictions. Every refinement must have an existing DATE_TIME anchor;
-GT cannot choose eligibility or boundaries.
-
-**Why:** The user explicitly permitted replacement evaluation for this final
-narrowly scoped trial, superseding append-only semantics only for this variant.
-
-**How to apply:** Keep production, inference, scorer, ontology and frozen
-experiments untouched. Leave work uncommitted. If anchoring does not preserve
-useful recoveries while reducing new subspan FP, stop DATE_TIME experimentation
+DATE_TIME experimentation is CLOSED. Preserve both previous offline variants
 and do not implement another DATE_TIME heuristic.
+
+**Why:** The user explicitly closed DATE_TIME after the anchored experiment
+produced limited AI4Privacy gain and no Gretel/Argilla change.
+
+**How to apply:** Treat the date/time variants as frozen evidence, not a starting
+point for another heuristic. CREDIT_CARD must not be revisited yet; phone
+variants remain frozen.
+
+## Location anchored experiment stopping rule
+
+For LOCATION, anchor each proposed replacement to an existing model prediction,
+preserve the original separately, and retain label, score, order and multiplicity.
+No document-wide extraction, gazetteer, geographic hierarchy inference,
+capitalisation-only expansion, PERSON↔LOCATION suppression, GT-selected
+boundaries or dataset-specific rules.
+
+**Why:** The user explicitly requested a generic source-only offline test of
+LOCATION truncation repair, not broad new prediction generation.
+
+**How to apply:** Keep inference, production, persisted predictions, scorer,
+ontology and other experiments unchanged; leave new work uncommitted. If the
+effect is tiny or dataset-specific, STOP LOCATION experimentation rather than
+adding more heuristics.
+
+LOCATION experimentation is now stopped. Retain the anchored result as offline
+negative/limited evidence only; do not promote it or implement another variant.
+
+**Why:** The target truncation cohort had no recovery, and the tiny net gain
+was dataset-specific, triggering the user's explicit stopping rule.
+
+**How to apply:** Preserve the result for review without treating aggregate
+F1 improvement as grounds to restart LOCATION heuristics.

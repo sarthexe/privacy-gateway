@@ -1,0 +1,321 @@
+We are continuing Phase 1.5 after closing the DATE_TIME experiment.
+
+DATE_TIME:
+- previous broad boundary variant: mixed result
+- anchored refinement: limited AI4Privacy gain, zero change on Gretel/Argilla
+- DATE_TIME experimentation is now CLOSED
+- do not implement another DATE_TIME heuristic
+
+CREDIT_CARD:
+- candidate/arbitration experiment was not robust
+- do not revisit yet
+
+PHONE_NUMBER:
+- Variant A and boundary Variant B are frozen offline experiments
+- do not modify them
+
+NEXT EXPERIMENT:
+LOCATION anchored boundary refinement.
+
+This is an OFFLINE EXPERIMENT ONLY.
+
+DO NOT:
+- run GLiNER inference
+- modify production detector code
+- modify GLiNER
+- change threshold
+- change max_width
+- regenerate predictions
+- modify persisted prediction artifacts
+- modify strict scorer
+- change ontology
+- add document-wide location extraction
+- add gazetteer/location database matching
+- add PERSON↔LOCATION suppression
+- use GT to select candidate boundaries
+- use dataset-specific rules
+
+Motivation from the existing root-cause analysis:
+- AI4Privacy LOCATION has substantial boundary behavior where the prediction is shorter than the GT span.
+- Existing diagnostics showed 2,266 / 1,975 GT-contains-prediction pairs at thresholds 0.3 / 0.7.
+- LOCATION also contributes substantial FP.
+- We need to determine whether a source-only anchored boundary correction can improve LOCATION without creating broad new predictions.
+
+STEP 1 — Inspect existing LOCATION evidence
+
+Inspect:
+- Phase 1.5 root-cause analysis
+- OOD error reports
+- per-type LOCATION TP/FP/FN
+- LOCATION boundary relations
+- existing DATE_TIME and PHONE_NUMBER anchored-refinement patterns
+
+Do not modify frozen experiments.
+
+CHECKPOINT 1/5 — LOCATION evidence analysis
+
+Report:
+- LOCATION TP/FP/FN for all six conditions
+- main FN categories
+- main FP categories
+- boundary relation counts
+- especially GT-contained-by-prediction vs prediction-contained-by-GT
+- recurring source-boundary structures
+- which boundary patterns are plausibly fixable using source-only rules
+
+STEP 2 — Build an isolated anchored experiment
+
+Create:
+
+`scripts/gliner_location_anchored_refinement.py`
+
+Tests:
+
+`tests/test_gliner_location_anchored_refinement.py`
+
+Docs:
+
+`docs/location-anchored-refinement.md`
+
+The experiment must anchor every refinement to an EXISTING GLiNER LOCATION prediction.
+
+There must be:
+- no new LOCATION detection from arbitrary source text
+- no document-wide candidate generation
+- no gazetteer lookup
+- no external knowledge source
+
+STEP 3 — Define eligibility
+
+For each existing GLiNER LOCATION prediction:
+
+Inspect:
+- its original span
+- a bounded source neighborhood
+
+Use a fixed maximum neighborhood similar to previous anchored experiments, but justify the chosen value from the source structure.
+
+The refinement may:
+- remove clearly peripheral punctuation
+- recover source characters that are structurally attached to the existing location expression
+- preserve legitimate multi-token location structure
+- correct obvious truncation caused by token/boundary segmentation
+
+It must NOT:
+- infer a new location from surrounding prose
+- expand to arbitrary adjacent nouns
+- infer geographic hierarchy
+- replace one location with another
+- use a gazetteer
+- infer from capitalisation alone
+- use dataset identity
+- use GT boundaries
+- use semantic labels unavailable to the original model prediction
+
+Every rule must be:
+- deterministic
+- source-only
+- generic
+- documented
+
+STEP 4 — Important LOCATION-specific constraint
+
+Do not assume that a longer location span is always better.
+
+A refinement must have a defensible structural basis for including additional source characters.
+
+Examples that may be investigated:
+- punctuation surrounding the model span
+- possessive/apostrophe attachment where syntactically part of the name
+- multi-token location names where the model span clearly stops at a structural boundary
+- parenthetical or comma-separated qualifiers only when the existing expression structurally supports them
+
+Do NOT automatically absorb:
+- nearby organization names
+- nearby person names
+- arbitrary adjectives
+- sentence-level context
+- unrelated geographic words
+
+STEP 5 — One-to-one replacement semantics
+
+Like the DATE_TIME anchored experiment:
+
+- preserve every original model prediction
+- for each eligible LOCATION prediction, produce at most one refined replacement
+- unchanged/rejected predictions remain unchanged
+- non-LOCATION predictions remain untouched
+- retain original label and score
+- do not append multiple candidate spans
+- do not silently delete predictions
+
+Track:
+- original LOCATION predictions
+- replacements
+- unchanged
+- rejected
+- ambiguous
+- changed predictions
+- exact → nonexact transitions
+- nonexact → exact transitions
+
+STEP 6 — Evaluate all six conditions
+
+Use persisted predictions only:
+
+Datasets:
+- AI4Privacy
+- Gretel
+- Argilla
+
+Thresholds:
+- 0.3
+- 0.7
+
+For every condition compare:
+
+BASELINE
+LOCATION TP/FP/FN
+P/R/F1
+
+VARIANT B
+LOCATION TP/FP/FN
+P/R/F1
+
+Report:
+- ΔTP
+- ΔFP
+- ΔFN
+- Δprecision
+- Δrecall
+- ΔF1
+
+Also report boundary categories:
+- exact
+- prediction inside GT
+- GT inside prediction
+- partial overlap
+- no overlap
+
+STEP 7 — Critical truncation diagnostic
+
+Explicitly measure:
+
+`GT contains prediction`
+
+before and after refinement.
+
+Report:
+- baseline count
+- refined count
+- number converted to exact
+- number remaining nonexact
+- number converted to FP
+- number of FN recovered
+
+The purpose is specifically to test whether the observed LOCATION truncation is repairable.
+
+STEP 8 — Overall benchmark effect
+
+Also report:
+- full-strict P/R/F1
+- gateway-supported-only P/R/F1
+
+But do not optimize the experiment against aggregate F1 alone.
+
+LOCATION-specific boundary recovery is the primary outcome.
+
+STEP 9 — Regression invariants
+
+Verify:
+- zero GLiNER inference
+- zero regenerated predictions
+- persisted prediction hashes unchanged
+- input hashes unchanged
+- baseline metrics exactly reproduced
+- all non-LOCATION predictions unchanged
+- no production files changed
+- phone/email/credit-card/DATE_TIME experiments unchanged
+- scorer and ontology unchanged
+
+STEP 10 — Tests
+
+Create deterministic synthetic tests for:
+- punctuation
+- multi-token location spans
+- possessive/location-name boundaries
+- parenthetical boundary behavior
+- comma handling
+- truncation recovery
+- ambiguous expansion rejection
+- unrelated nearby PERSON rejection
+- unrelated nearby ORGANIZATION rejection
+- one-to-one replacement
+- duplicate/rejection handling
+- non-LOCATION invariance
+- GT-independent refinement
+
+Use synthetic location names only.
+
+Run:
+- new LOCATION tests
+- frozen DATE_TIME anchored tests
+- frozen DATE_TIME boundary tests
+- phone tests
+- credit-card tests
+- email/analyzer tests
+- Ruff
+- py_compile/type checks appropriate to changed files
+
+Do not run GLiNER inference.
+
+CHECKPOINT 2/5 — LOCATION implementation complete
+
+Report:
+- exact boundary/refinement rules
+- exact eligibility policy
+- why rules are source-only
+- files changed
+
+CHECKPOINT 3/5 — Tests complete
+
+Report:
+- test count
+- pass/fail
+- elapsed time
+
+CHECKPOINT 4/5 — Six evaluations complete
+
+For each dataset:
+
+`CHECKPOINT — <dataset> LOCATION evaluation complete`
+
+Report:
+- baseline LOCATION metrics
+- Variant B LOCATION metrics
+- TP/FP/FN deltas
+- GT-contained-by-prediction counts before/after
+- exact recovery counts
+- elapsed time
+- ETA only when justified by measured progress
+
+CHECKPOINT 5/5 — LOCATION analysis complete
+
+Final response must contain:
+- exact files changed
+- exact commands
+- all six-condition LOCATION results
+- boundary recovery analysis
+- overall supported-only effect
+- regression invariant results
+- warnings/limitations
+- clear observations vs hypotheses
+- whether LOCATION refinement is worth freezing as an offline experiment
+- whether another LOCATION variant is justified
+
+Do NOT commit automatically.
+Leave the experiment uncommitted for review.
+
+If the anchored LOCATION experiment produces only a tiny or dataset-specific effect, STOP LOCATION experimentation rather than adding more heuristics.
+
+High

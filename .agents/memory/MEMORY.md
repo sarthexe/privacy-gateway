@@ -1,2 +1,2 @@
 - [Nested Python dependencies](nested-python-dependencies.md) — Python package installation in this pnpm workspace may initialize an unintended root Python project.
-- [OOD ground-truth integrity](ood-ground-truth-integrity.md) — exclusions must be auditable; never repair annotations; distinguish raw-file and canonical ontology fingerprints.
+- [OOD evaluation controls](ood-ground-truth-integrity.md) — immutable GT, checksum/coverage diagnostics, frozen phone variants, and byte-identical restoration.

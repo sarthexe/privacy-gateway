@@ -24,3 +24,19 @@ Keep pinned benchmark adapters unchanged when restoring missing temporary inputs
 **Why:** Temporary evaluation inputs can disappear across environment resets. Repeated label-map loading dominated reconstruction time; preloading the same mapping restored byte-identical data without modifying the frozen adapter or regenerating predictions.
 
 **How to apply:** Reuse the pinned source revision and the original whole-example exclusion policy. Verify normalized bytes and decompressed persisted prediction bytes against the frozen evidence before evaluation. An optimization is not permission to repair annotations or change the benchmark.
+
+## Credit-card validity and annotation coverage
+
+Keep checksum-invalid CREDIT_CARD GT in the benchmark. Analyze checksum-valid, checksum-invalid, and unable-to-validate GT separately. Zero-GT-support CREDIT_CARD predictions are coverage diagnostics, not confirmed semantic detector failures, and must not drive arbitration rules.
+
+**Why:** The user explicitly required these distinctions for offline candidate generation and type arbitration.
+
+**How to apply:** Fix candidate and arbitration rules from source/model-output evidence before evaluation. Use GT only afterward for scoring and consequences; never use a checksum to exclude otherwise valid annotations.
+
+## Frozen phone experiments
+
+Both PHONE_NUMBER candidate generation and phone boundary refinement are reviewed and frozen for offline experimentation. Keep them unchanged during separately scoped detector experiments.
+
+**Why:** The user explicitly declared both phone variants frozen before beginning the credit-card experiment.
+
+**How to apply:** Implement new detector trials in isolated files and verify the frozen phone files remain unchanged.

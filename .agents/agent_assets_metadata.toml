@@ -98,3 +98,31 @@ mtime_ms = 1791023927585
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/a319c7fe-dbee-4095-8253-8aff4254d841/26be9ec3-69fd-416b-aa6b-77aca8d61f59"
 storage_version_token = "1791023975831414"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "MwwdNoqFDV_Rr-2UkDVJC"
+uri = "file://.local/outputs/credit-card-experiment.html"
+type = "html"
+title = "CREDIT_CARD offline experiment — complete analysis"
+description = "All six conditions, full and supported-only metrics, checksum coverage, arbitration accounting, commands and regression checks."
+logical_id = "a253a29e-f0c4-44f2-bd38-3b5c5331fb58"
+content_hash = "sha256:042fce8eed6d3d82a4ce77d0a450a82a94ddb9a0667ac607f8abda8997fbf969"
+size = 109061
+mtime_ms = 1791044854777
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/a253a29e-f0c4-44f2-bd38-3b5c5331fb58/eefe0ef3-9ce2-4919-9534-de5f76f03d41"
+storage_version_token = "1791044959678393"
+content_type = "text/html"
+
+[[outputs]]
+id = "cWSSKu0RgJeJnj9rxla8Y"
+uri = "file://.local/outputs/credit-card-experiment.json"
+type = "unspecified"
+title = "CREDIT_CARD experiment — aggregate JSON"
+description = "Machine-readable aggregate results and reproducibility evidence; no values, snippets, offsets or example IDs."
+logical_id = "16e54c59-e93f-4601-a762-87a899ddd621"
+content_hash = "sha256:4d2d70925cc71b64c111376cadde0a4ad1a8b82cd8650c71ab9a01853e2df01c"
+size = 62839
+mtime_ms = 1791044854773
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/16e54c59-e93f-4601-a762-87a899ddd621/19028f84-c16a-49dc-ad8b-2812c617dd86"
+storage_version_token = "1791044961081780"
+content_type = "application/octet-stream"

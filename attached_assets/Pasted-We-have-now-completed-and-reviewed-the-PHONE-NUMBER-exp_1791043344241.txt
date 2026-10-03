@@ -1,0 +1,305 @@
+We have now completed and reviewed the PHONE_NUMBER experiments.
+
+Variant A is frozen.
+Variant B (phone boundary refinement) is also frozen for offline experimentation.
+
+Do NOT run any GLiNER inference.
+
+We now begin the next separately scoped Phase 1.5 experiment:
+
+CREDIT_CARD candidate generation + type arbitration.
+
+This must remain an OFFLINE EXPERIMENT ONLY.
+
+Do NOT:
+- modify production detection code
+- modify GLiNER
+- change threshold
+- change max_width
+- regenerate predictions
+- modify persisted benchmark predictions
+- modify the strict scorer
+- implement broad numeric-entity suppression
+- change the gateway ontology
+- use ground truth to make candidate/arbitration decisions
+- add dataset-specific rules
+
+Use:
+- exact reconstructed OOD datasets
+- exact persisted GLiNER predictions
+- the existing strict scorer
+- the existing ontology/type mapping
+- the existing offline experiment architecture
+
+Motivation from the root-cause analysis:
+- Argilla CREDIT_CARD has meaningful FN.
+- CREDIT_CARD FN include overlap with unsupported numeric entity types.
+- BANK_ACCOUNT is a recurring competing destination in the diagnostic.
+- AI4Privacy has zero mapped CREDIT_CARD GT, so its CREDIT_CARD predictions cannot be used as direct evidence of detector correctness/failure.
+- Therefore AI4Privacy CREDIT_CARD must be reported separately as a zero-GT-support diagnostic and must not drive arbitration rules.
+
+STEP 1 — Inspect existing evidence
+
+Inspect:
+- `scripts/gliner_phone_hybrid_experiment.py`
+- `scripts/gliner_phone_boundary_refinement.py`
+- existing OOD analyzer
+- existing ontology mappings
+- saved CREDIT_CARD diagnostics/reports
+
+CHECKPOINT 1/5 — CREDIT_CARD experiment setup
+
+Report:
+- branch/commit
+- relevant files
+- existing CREDIT_CARD evidence
+- exact persisted prediction inputs
+- exact experiment scope
+- candidate/arbitration rules planned
+
+STEP 2 — Build isolated candidate generator
+
+Create:
+
+`scripts/gliner_credit_card_experiment.py`
+
+Tests:
+
+`tests/test_gliner_credit_card_experiment.py`
+
+Docs:
+
+`docs/credit-card-experiment.md`
+
+Candidate generation must be deterministic and source-only.
+
+Generate candidate numeric/separator spans using an explicit extraction rule.
+
+Candidate preprocessing may:
+- normalize separators for validation
+- preserve original source boundaries
+- reject clearly malformed candidates
+
+Candidate validation should consider:
+- permitted lengths
+- digit count
+- separator structure
+- Luhn checksum
+- explicit card-number context where appropriate
+
+Do not require Luhn validity globally without measuring its effect.
+
+CRITICAL:
+
+Partition annotated CREDIT_CARD GT during analysis into:
+- checksum-valid
+- checksum-invalid
+- unable to validate
+
+Do not exclude checksum-invalid GT from the benchmark.
+Report them separately.
+
+STEP 3 — Candidate validity diagnostics
+
+For every candidate class, report aggregate counts only:
+
+- raw candidates
+- length-valid
+- checksum-valid
+- checksum-invalid
+- parser/validation rejected
+- duplicate candidates removed
+
+Do not export:
+- plaintext card numbers
+- snippets
+- raw offsets
+- example IDs
+
+STEP 4 — Type arbitration
+
+Start with a conservative baseline:
+
+Variant A:
+`gliner_plus_validated_credit_card_candidates`
+
+Only add a CREDIT_CARD candidate when:
+- it passes the documented candidate validation rules
+- it is not an exact duplicate of an existing prediction
+- no existing prediction needs to be deleted
+
+Then test a narrowly scoped arbitration variant only for direct overlap with a candidate:
+
+Variant B:
+`gliner_credit_card_conservative_arbitration`
+
+The arbitration rule must be deterministic and source/model-output based.
+
+Possible competing types may include:
+- BANK_ACCOUNT
+- ID_CARD
+- other numeric entity predictions
+
+Do NOT suppress unrelated predictions globally.
+
+Do NOT use GT to decide which type should win.
+
+Every arbitration decision must be explainable from:
+- candidate validity
+- span relation
+- existing model prediction type
+- explicit deterministic priority rules
+
+Before evaluation, print/document the exact arbitration rule.
+
+STEP 5 — Evaluate all three datasets
+
+Run both existing thresholds:
+- 0.3
+- 0.7
+
+Datasets:
+- AI4Privacy
+- Gretel
+- Argilla
+
+For every condition report:
+
+BASELINE:
+- TP / FP / FN
+- precision / recall / F1
+
+CREDIT-CARD CANDIDATE HYBRID:
+- TP / FP / FN
+- precision / recall / F1
+
+ARBITRATION VARIANT:
+- TP / FP / FN
+- precision / recall / F1
+
+Also report CREDIT_CARD-specific:
+- GT count
+- checksum-valid GT
+- checksum-invalid GT
+- baseline TP/FP/FN
+- hybrid TP/FP/FN
+- arbitration TP/FP/FN
+- candidate counts
+- exact duplicates skipped
+- candidates rejected
+- arbitration events
+
+STEP 6 — Separate annotation-coverage effects
+
+For each dataset explicitly report:
+- CREDIT_CARD GT count
+- whether CREDIT_CARD has zero GT support
+- CREDIT_CARD predictions against zero-support datasets
+
+Do not interpret zero-GT-support FP as confirmed semantic detector failures.
+
+STEP 7 — Evaluate arbitration carefully
+
+For each arbitration condition report:
+- number of model predictions preserved
+- number of candidate additions
+- number of predictions suppressed
+- number of predictions changed
+- number of cross-type conflicts encountered
+- number resolved by arbitration
+- number rejected as ambiguous
+
+Conservative invariant:
+- no unrelated predictions are changed
+- no prediction is removed unless the experiment's explicit arbitration rule requires it
+- existing non-CREDIT_CARD predictions should remain unchanged in Variant A
+- Variant B must report every suppression category
+
+STEP 8 — Regression protection
+
+Verify:
+- persisted input hashes unchanged
+- prediction file hashes unchanged
+- baseline metrics exactly reproduced
+- no GLiNER inference
+- no threshold/max_width/model changes
+- no strict scorer changes
+- existing phone and email experiment files unchanged
+
+STEP 9 — Tests
+
+Tests must cover:
+- synthetic valid card candidates
+- separator normalization
+- length rejection
+- Luhn-valid and Luhn-invalid cases
+- duplicate candidate handling
+- candidate boundary preservation
+- zero-GT dataset behavior
+- checksum-invalid GT reporting
+- direct BANK_ACCOUNT conflict
+- direct ID_CARD conflict
+- ambiguous conflict rejection
+- non-target prediction invariance
+- malformed input fail-closed behavior
+
+Use only synthetic card numbers in tests.
+
+Run:
+- new CREDIT_CARD tests
+- frozen phone tests
+- email hybrid/analyzer tests
+- Ruff
+- py_compile/type checks appropriate to changed files
+
+Do not run full GLiNER inference.
+
+CHECKPOINT 2/5 — Candidate generator complete
+
+Report:
+- exact extraction rules
+- validation rules
+- checksum policy
+- candidate statistics on fixtures
+
+CHECKPOINT 3/5 — Arbitration implementation and tests complete
+
+Report:
+- exact arbitration rule
+- number of tests
+- test results
+- elapsed time
+
+CHECKPOINT 4/5 — Six offline evaluations complete
+
+For each dataset:
+`CHECKPOINT — <dataset> CREDIT_CARD evaluation complete`
+
+Report:
+- baseline → candidate hybrid → arbitration
+- CREDIT_CARD TP/FP/FN
+- precision/recall/F1
+- candidate statistics
+- arbitration statistics
+- elapsed time
+- measured ETA only when justified
+
+CHECKPOINT 5/5 — CREDIT_CARD experiment analysis complete
+
+Final response must contain:
+- exact files changed
+- exact commands
+- all six-condition metrics
+- CREDIT_CARD-specific metrics
+- checksum-valid/invalid GT breakdown
+- arbitration outcomes
+- regression invariants
+- warnings/limitations
+- factual interpretation
+- whether the evidence supports keeping the candidate hybrid
+- whether the evidence supports keeping arbitration
+
+Do NOT commit automatically.
+Leave the experiment uncommitted for review.
+
+High

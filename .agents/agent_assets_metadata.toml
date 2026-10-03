@@ -154,3 +154,17 @@ mtime_ms = 1791049531556
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/432b62f9-4f22-48e2-beb2-2785dac17a64/d7b0e21e-b859-45d1-8d62-6859b9061dff"
 storage_version_token = "1791049598832158"
 content_type = "text/html"
+
+[[outputs]]
+id = "kcdHft09rf6WNdQPELEnR"
+uri = "file://.local/outputs/person-root-cause-analysis-report.md"
+type = "text"
+title = "PERSON root-cause and type-conflict analysis"
+description = "Six-condition PERSON metrics, bidirectional overlap matrices, structural signals, threshold comparison and one proposed future experiment. Analysis only; no detector or suppression implemented."
+logical_id = "a2768f3d-e51e-4c0d-b73d-b15153c3e823"
+content_hash = "sha256:592d58912bfcb79d3c38bb2143f953342a8a1a53c05d4c557440a2e92045ab93"
+size = 14056
+mtime_ms = 1791061144064
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/a2768f3d-e51e-4c0d-b73d-b15153c3e823/27373e6f-f8dc-4453-9cda-b2ec3ca10a0d"
+storage_version_token = "1791061197800709"
+content_type = "text/markdown"

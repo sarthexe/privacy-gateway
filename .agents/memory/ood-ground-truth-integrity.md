@@ -102,3 +102,20 @@ was dataset-specific, triggering the user's explicit stopping rule.
 
 **How to apply:** Preserve the result for review without treating aggregate
 F1 improvement as grounds to restart LOCATION heuristics.
+
+## PERSON analysis-only phase
+
+PERSON work is root-cause/type-conflict analysis only until a separate controlled
+experiment is authorized. Do not build a PERSON recognizer or implement
+cross-type suppression/arbitration in this phase. LOCATION is closed and its
+anchored offline experiment must remain unchanged.
+
+**Why:** The user explicitly required analysis of persisted predictions before
+any PERSON experiment, and warned that overlap is not proven semantic confusion.
+
+**How to apply:** Keep inference, production, prediction artifacts, strict scorer,
+ontology and frozen experiments unchanged. Use GT only for diagnostics, export
+aggregate counts without source values/offsets/example IDs, and leave work
+uncommitted. Proposed future experiments must be generic and source/model-
+anchored, without GT decisions, gazetteers, capitalization alone or broad name
+extraction.

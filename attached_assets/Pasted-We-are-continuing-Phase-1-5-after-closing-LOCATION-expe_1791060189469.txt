@@ -1,0 +1,237 @@
+We are continuing Phase 1.5 after closing LOCATION experimentation.
+
+LOCATION is now CLOSED.
+The location anchored refinement remains an offline experiment only and must not be modified.
+
+Next target:
+PERSON.
+
+Do NOT immediately build a deterministic person-name recognizer.
+
+First perform an offline ROOT-CAUSE / TYPE-CONFLICT analysis for PERSON using the existing persisted GLiNER predictions and exact reconstructed OOD datasets.
+
+DO NOT:
+- run GLiNER inference
+- modify production detection
+- modify GLiNER
+- change threshold
+- change max_width
+- regenerate predictions
+- modify persisted predictions
+- change the strict scorer
+- change ontology
+- add a new PERSON detector yet
+- use GT to make model decisions
+- implement cross-type suppression yet
+
+Motivation:
+The previous OOD diagnosis showed PERSON is a major supported-type error source, especially on AI4Privacy. There is also evidence of supported-type confusion involving PERSON and LOCATION.
+
+The goal is to determine whether the remaining PERSON errors are primarily:
+1. genuine PERSON detection misses
+2. span errors
+3. PERSON ↔ LOCATION type confusion
+4. PERSON ↔ other supported-type confusion
+5. annotation/ontology effects
+6. source patterns that could support a deterministic arbitration rule
+
+STEP 1 — Inspect existing evidence
+
+Inspect:
+- Phase 1.5 root-cause reports
+- per-type PERSON diagnostics
+- confusion-pair diagnostics
+- boundary diagnostics
+- persisted predictions
+- normalized OOD datasets
+- existing ontology mappings
+
+CHECKPOINT 1/5 — PERSON evidence inventory
+
+For AI4Privacy, Gretel and Argilla at 0.3 and 0.7 report:
+- PERSON GT count
+- TP / FP / FN
+- P/R/F1
+- detector-miss FN
+- span-mismatch FN
+- supported-type confusion evidence
+- UNMAPPED/unsupported overlap evidence
+
+Do not interpret overlap alone as proven semantic confusion.
+
+STEP 2 — Build a detailed PERSON confusion matrix
+
+For every supported prediction type interacting with PERSON GT, report:
+
+PERSON GT → predicted type
+
+and
+
+predicted PERSON → GT type
+
+for:
+- PERSON
+- LOCATION
+- PHONE_NUMBER
+- EMAIL_ADDRESS
+- DATE_TIME
+- CREDIT_CARD
+- IP_ADDRESS
+
+Also report:
+- UNMAPPED
+- unsupported types
+
+Use counts only.
+
+Do not export text, PII, offsets, IDs or snippets.
+
+STEP 3 — Separate overlap categories
+
+For PERSON FN and FP distinguish:
+- exact type/span match
+- same-type span mismatch
+- different-supported-type overlap
+- different-unsupported-type overlap
+- UNMAPPED overlap
+- no-overlap detector miss
+
+The purpose is to determine whether PERSON errors are actually type-arbitration problems.
+
+STEP 4 — Examine source-only structural signals
+
+For supported-type conflicts involving PERSON, inspect whether the source/model output contains deterministic structural evidence such as:
+- numeric-only structure
+- phone-like punctuation
+- date/time structure
+- email structure
+- obvious location-list punctuation
+- capitalization patterns
+
+Important:
+Capitalization alone MUST NOT be treated as sufficient evidence for PERSON.
+
+Do not use gazetteers yet.
+
+Do not create a PERSON detector.
+
+Report which signals appear consistently enough to justify a future controlled experiment.
+
+STEP 5 — Analyze PERSON ↔ LOCATION specifically
+
+Because LOCATION has now been closed, investigate whether some apparent PERSON errors are actually cross-type arbitration.
+
+For PERSON↔LOCATION overlaps report:
+- exact-span different-type conflicts
+- partial-overlap conflicts
+- nested conflicts
+- same-boundary conflicting labels
+- non-overlapping misses
+
+Compare 0.3 vs 0.7.
+
+Do not resolve any conflicts yet.
+
+STEP 6 — Analyze PERSON prediction precision
+
+For predictions labeled PERSON by GLiNER, partition unmatched predictions into:
+- overlaps LOCATION GT
+- overlaps PHONE_NUMBER GT
+- overlaps DATE_TIME GT
+- overlaps EMAIL GT
+- overlaps unsupported GT
+- overlaps UNMAPPED GT
+- no GT overlap
+
+This is especially important because strict FP does not necessarily establish a semantic detector error.
+
+STEP 7 — Identify whether a controlled PERSON experiment is justified
+
+At the end, classify the evidence into:
+
+A. `detector_miss_dominant`
+B. `span_boundary_dominant`
+C. `supported_type_confusion_dominant`
+D. `annotation_coverage_dominant`
+E. `mixed`
+
+Do this separately for each dataset.
+
+Then identify at most TWO technically defensible next experiments.
+
+Potential examples:
+- narrowly scoped PERSON↔LOCATION arbitration
+- source/model-anchored PERSON boundary correction
+- deterministic structural suppression for clearly non-person formats
+
+Do NOT implement those experiments yet.
+
+A future experiment must not rely on:
+- GT
+- dataset-specific rules
+- gazetteer lookup
+- capitalization alone
+- broad PERSON name extraction
+
+STEP 8 — Threshold comparison
+
+Compare 0.3 vs 0.7 PERSON:
+- TP
+- FP
+- FN
+- P/R/F1
+- confusion counts
+- detector-miss counts
+- boundary counts
+
+Do not tune threshold.
+
+STEP 9 — Regression/integrity checks
+
+Verify:
+- no inference
+- no prediction regeneration
+- prediction hashes unchanged
+- dataset hashes unchanged
+- frozen phone/credit-card/DATE_TIME/LOCATION/email/analyzer files unchanged
+- scorer unchanged
+- ontology unchanged
+
+CHECKPOINT 2/5 — PERSON confusion inventory complete
+
+Report:
+- full supported-type confusion matrix
+- major conflict pairs
+- dataset differences
+
+CHECKPOINT 3/5 — PERSON structural analysis complete
+
+Report:
+- source-only signals observed
+- which are potentially usable
+- which are too ambiguous
+
+CHECKPOINT 4/5 — PERSON root-cause classification complete
+
+Report:
+- A/B/C/D/E classification per dataset
+- exact evidence supporting each classification
+- threshold comparison
+
+CHECKPOINT 5/5 — PERSON experiment decision complete
+
+Final response must contain:
+- exact commands
+- elapsed times
+- all key PERSON metrics
+- confusion tables
+- structural-signal analysis
+- observations vs hypotheses
+- at most two proposed next experiments
+- explicit statement that no experiment was implemented
+- confirmation that no inference or persisted artifact was changed
+
+Do not commit automatically.
+This phase is analysis only.
+
+High

@@ -16,3 +16,11 @@ OOD benchmark reproducibility records use the SHA256 of the ontology YAML file b
 **Why:** Comparing the two representations directly produces a false ontology-mismatch diagnosis even when the ontology is unchanged.
 
 **How to apply:** Verify benchmark fingerprints against raw file bytes and normalization fingerprints against the canonical mapping. Never edit the ontology to make these two different fingerprints equal.
+
+## Restoring ephemeral normalized inputs
+
+Keep pinned benchmark adapters unchanged when restoring missing temporary inputs. A temporary restoration driver can preload an immutable label map rather than reload it for each row, but its output must match the previously recorded byte-level SHA256 exactly.
+
+**Why:** Temporary evaluation inputs can disappear across environment resets. Repeated label-map loading dominated reconstruction time; preloading the same mapping restored byte-identical data without modifying the frozen adapter or regenerating predictions.
+
+**How to apply:** Reuse the pinned source revision and the original whole-example exclusion policy. Verify normalized bytes and decompressed persisted prediction bytes against the frozen evidence before evaluation. An optimization is not permission to repair annotations or change the benchmark.

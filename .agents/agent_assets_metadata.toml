@@ -70,3 +70,31 @@ mtime_ms = 1790965476602
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/471580e6-8ef0-496b-bfd9-fa34e8090f1e/10fa32e7-9e95-4292-850d-395cda6614ae"
 storage_version_token = "1790965592976232"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "eArQp-XU2BG66HOV0ZsbE"
+uri = "file://.local/outputs/phone-boundary-refinement-experiment.html"
+type = "html"
+title = "Variant B — complete offline PHONE_NUMBER comparison"
+description = "All six conditions: baseline/A/B strict metrics and deltas, recovery retention, boundary categories, new-FP diagnosis, invariants, commands and fingerprints. Aggregate-only report."
+logical_id = "3173eaa5-9c9a-460b-a5a4-375b474d9e07"
+content_hash = "sha256:e5604263fc06cf746403dd881569352b4a470f65e8db001509cec479e4632540"
+size = 34332
+mtime_ms = 1791023927749
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/3173eaa5-9c9a-460b-a5a4-375b474d9e07/4568318e-d1c8-40d0-af4a-45dfba37d2f8"
+storage_version_token = "1791023974370690"
+content_type = "text/html"
+
+[[outputs]]
+id = "qsvOd-r_kY5IjJGyp1lzn"
+uri = "file://.local/outputs/phone-boundary-refinement-experiment.json"
+type = "unspecified"
+title = "Variant B — aggregate evidence JSON"
+description = "Full-precision machine-readable evaluation and reproducibility evidence. No source values, snippets, offsets or example IDs."
+logical_id = "a319c7fe-dbee-4095-8253-8aff4254d841"
+content_hash = "sha256:ad0dbdec49be702bb673ed88d1dfc070eef2cf19c9c63a36792374ad82f95025"
+size = 45417
+mtime_ms = 1791023927585
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:91d5bc5c-b86a-40dc-8fde-2e12dc3bcdec/a319c7fe-dbee-4095-8253-8aff4254d841/26be9ec3-69fd-416b-aa6b-77aca8d61f59"
+storage_version_token = "1791023975831414"
+content_type = "application/octet-stream"

@@ -1,0 +1,251 @@
+We are continuing Phase 1.5 with a SECOND, narrowly scoped offline experiment.
+
+Variant A — deterministic PHONE_NUMBER hybrid — is now committed and frozen.
+
+Variant A result:
+- AI4Privacy 0.7: PHONE_NUMBER TP +406, FP +56, FN -406; F1 0.757078 → 0.777179
+- Gretel 0.7: TP +21, FP +2, FN -21; F1 0.876729 → 0.889680
+- Argilla: unchanged
+- Overall supported-only F1 improvement was small.
+- Variant A introduced additional boundary-mismatch FP:
+  - AI4Privacy: 22 at each threshold
+  - Gretel: 2 at each threshold
+
+The previous diagnosis justified a narrowly scoped candidate-boundary refinement and did NOT justify broad cross-type suppression.
+
+THIS TASK:
+Test boundary refinement only.
+
+DO NOT:
+- run GLiNER inference
+- modify GLiNER
+- change threshold
+- change max_width
+- change production detection code
+- modify persisted predictions
+- change the strict scorer
+- add cross-type suppression
+- implement CREDIT_CARD
+- tune thresholds
+- use dataset-specific special cases that cannot generalize
+
+Use:
+- exact reconstructed OOD datasets
+- exact persisted GLiNER predictions
+- Variant A candidate-generation logic as the starting point
+- existing strict evaluation
+
+GOAL
+
+Determine whether candidate boundary refinement can preserve the PHONE_NUMBER FN recoveries from Variant A while reducing the newly introduced strict FP.
+
+STEP 1 — Inspect Variant A boundary failures
+
+Before implementing anything, inspect:
+- `scripts/gliner_phone_hybrid_experiment.py`
+- `tests/test_gliner_phone_hybrid_experiment.py`
+- `docs/phone-hybrid-experiment.md`
+
+Identify exactly how candidate spans are currently produced and why parser-valid candidates can extend beyond the annotated phone span.
+
+Do not change Variant A.
+
+CHECKPOINT 1/5 — Boundary-failure analysis
+Report:
+- current candidate extraction/boundary algorithm
+- the observed classes of boundary failure
+- which classes are suitable for a generic deterministic refinement
+- which classes must NOT be handled heuristically
+
+STEP 2 — Build isolated Variant B
+
+Create a separate experiment implementation, for example:
+
+`scripts/gliner_phone_boundary_refinement.py`
+
+with tests:
+
+`tests/test_gliner_phone_boundary_refinement.py`
+
+and documentation:
+
+`docs/phone-boundary-refinement.md`
+
+Variant B must start from the same validated candidate set as Variant A.
+
+Only change the candidate boundary-selection stage.
+
+Potential refinement strategies may include:
+- trimming surrounding punctuation when it is not part of the parsed number
+- handling extension separators explicitly
+- splitting obviously concatenated numeric groups
+- preferring the tightest parser-valid source span
+- rejecting a candidate when the extracted span contains unrelated surrounding numeric material
+
+However:
+- each rule must be explicit
+- each rule must be deterministic
+- each rule must be generic
+- no GT-derived decisions
+- no dataset-specific rules
+- no language-based region inference
+- no semantic assumptions about a value being real/assigned
+- do not use the GT to choose the boundary during inference
+
+The experiment must preserve exact original `[start,end)` offsets.
+
+STEP 3 — Candidate-level diagnostics
+
+For every validated candidate, classify the refined boundary against PHONE_NUMBER GT as:
+
+- exact
+- candidate inside GT
+- GT inside candidate
+- partial overlap
+- no phone-GT overlap
+
+Report aggregate counts only.
+
+Do not export:
+- plaintext phone numbers
+- text snippets
+- raw offsets
+- example IDs
+
+STEP 4 — Evaluate Variant B
+
+Evaluate:
+- AI4Privacy
+- Gretel
+- Argilla
+
+at:
+- threshold 0.3
+- threshold 0.7
+
+Use the same persisted predictions as Variant A.
+
+For every condition report:
+
+BASELINE GLiNER
+- TP / FP / FN
+- precision / recall / F1
+
+VARIANT A
+- TP / FP / FN
+- precision / recall / F1
+
+VARIANT B
+- TP / FP / FN
+- precision / recall / F1
+
+VARIANT B DELTA VS VARIANT A
+- ΔTP
+- ΔFP
+- ΔFN
+- Δprecision
+- Δrecall
+- ΔF1
+
+Also report PHONE_NUMBER-specific:
+- TP / FP / FN
+- candidate count
+- validated candidate count
+- exact-match candidates
+- boundary-mismatch candidates
+- no-GT-overlap candidates
+
+STEP 5 — The key success criterion
+
+Do NOT optimize only for F1.
+
+Explicitly answer:
+
+1. How many Variant A recovered PHONE_NUMBER FN remain recovered in Variant B?
+2. How many Variant A-added FP disappear?
+3. How many NEW FP does Variant B create?
+4. How many existing model predictions are modified? Expected: zero.
+5. Does Variant B improve the boundary-quality profile without requiring cross-type suppression?
+
+Provide a recovery-retention table:
+
+Dataset | Threshold | Variant A recovered FN | Variant B retained | Retention % | Variant A added FP | Variant B remaining
+
+STEP 6 — Regression invariants
+
+Verify for every condition:
+- non-PHONE_NUMBER predictions unchanged
+- existing GLiNER predictions are never deleted
+- existing prediction offsets/scores/order remain unchanged
+- only newly added PHONE_NUMBER candidates may differ
+- input hashes unchanged
+- persisted benchmark files unchanged
+
+STEP 7 — Tests
+
+Add deterministic tests for:
+- punctuation trimming
+- extension handling
+- concatenated numeric material
+- tightest valid span selection
+- candidate rejection when no defensible boundary exists
+- international number handling
+- explicit region policy
+- no implicit locale/region inference
+- exact duplicate handling
+- non-PHONE_NUMBER prediction invariance
+- malformed input / parser failure
+
+Use synthetic phone fixtures only.
+
+Run:
+- new Variant B tests
+- Variant A tests
+- existing email hybrid/analyzer tests
+- Ruff
+- py_compile or existing type checks relevant to changed files
+
+Do not run the full GLiNER model evaluation.
+
+CHECKPOINT 2/5 — Variant B implementation complete
+Report:
+- files changed
+- exact boundary refinement rules
+- why each rule is generic and not GT-dependent
+
+CHECKPOINT 3/5 — Variant B tests complete
+Report:
+- test count
+- pass/fail
+- elapsed time
+
+CHECKPOINT 4/5 — Variant B evaluation complete
+
+For each dataset:
+`CHECKPOINT — <dataset> Variant B evaluation complete`
+
+Include:
+- baseline → Variant A → Variant B PHONE_NUMBER metrics
+- recovery retention
+- FP reduction/addition
+- elapsed time
+- ETA only when enough measured progress exists
+
+CHECKPOINT 5/5 — Variant B analysis complete
+
+Final response must contain:
+- exact files changed
+- exact commands run
+- test results
+- baseline vs Variant A vs Variant B
+- recovery retention table
+- boundary-category changes
+- regression invariants
+- warnings/limitations
+- factual conclusion on whether boundary refinement helped
+- whether the evidence justifies freezing the phone hybrid or proceeding to the next detector experiment
+
+Do NOT commit automatically.
+Leave Variant B uncommitted for review.
+
+High

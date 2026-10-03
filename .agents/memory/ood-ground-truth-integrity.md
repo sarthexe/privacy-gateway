@@ -51,9 +51,9 @@ Do not promote either existing CREDIT_CARD variant.
 **How to apply:** Preserve the card experiment during separately scoped work;
 do not treat semantic checksum validity as evidence supporting production promotion.
 
-## Date/time experiment controls
+## Frozen previous date/time experiment controls
 
-DATE_TIME experiments must preserve every existing model prediction, including
+The previous append-only DATE_TIME experiment must preserve every model prediction, including
 existing DATE_TIME predictions. Only newly generated candidates may differ.
 Do not use GT to choose boundaries or language/dataset identity to choose date formats.
 Preserve legitimate timezone suffixes, AM/PM and date-time attachment even when GT
@@ -65,3 +65,19 @@ not benchmark-specific annotation matching or production changes.
 **How to apply:** Generate and refine from original source text before GT diagnostics.
 Keep decisions deterministic and generic, verify append-only preservation and
 frozen input bytes, and leave new experiments uncommitted for review.
+
+## Final anchored date/time experiment scope
+
+The previous DATE_TIME experiment is frozen as an offline mixed result. The
+final anchored variant may evaluate one-to-one replacements in a temporary
+scoring view, but must preserve original records separately and never mutate
+persisted predictions. Every refinement must have an existing DATE_TIME anchor;
+GT cannot choose eligibility or boundaries.
+
+**Why:** The user explicitly permitted replacement evaluation for this final
+narrowly scoped trial, superseding append-only semantics only for this variant.
+
+**How to apply:** Keep production, inference, scorer, ontology and frozen
+experiments untouched. Leave work uncommitted. If anchoring does not preserve
+useful recoveries while reducing new subspan FP, stop DATE_TIME experimentation
+and do not implement another DATE_TIME heuristic.

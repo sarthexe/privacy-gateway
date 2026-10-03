@@ -1,0 +1,273 @@
+We are continuing Phase 1.5 with a FINAL, narrowly scoped DATE_TIME experiment.
+
+The previous DATE_TIME boundary-refinement variant is now frozen as an offline mixed-result experiment.
+
+Previous result:
+- AI4Privacy improved meaningfully.
+- Gretel DATE_TIME F1 declined.
+- Argilla DATE_TIME F1 declined.
+- Gretel added FP are heavily concentrated in candidates whose structural core is inside a longer GT span.
+- The previous report notes that a generic source/model-anchored eligibility policy may reduce these subspan FP.
+
+DO NOT:
+- run GLiNER inference
+- modify production detector code
+- modify GLiNER
+- change threshold
+- change max_width
+- regenerate predictions
+- modify persisted prediction artifacts
+- modify strict scorer
+- use GT to choose/refine candidates
+- add cross-type suppression
+- introduce broad new source-only DATE_TIME candidates
+
+This experiment is specifically intended to test:
+
+EXISTING GLiNER DATE_TIME PREDICTION
+        ↓
+source-only structural boundary refinement
+        ↓
+refined DATE_TIME prediction
+
+The key difference from the previous variant:
+**Do not append arbitrary source-generated DATE_TIME candidates.**
+Every refinement must be anchored to an EXISTING GLiNER DATE_TIME prediction.
+
+The purpose is to determine whether we can improve existing DATE_TIME boundaries while avoiding new subspan false positives.
+
+STEP 1 — Inspect the previous DATE_TIME experiment
+
+Inspect:
+- `scripts/gliner_datetime_boundary_refinement.py`
+- its tests
+- its documentation
+- previous DATE_TIME aggregate report
+
+Identify:
+- which boundary rules recovered FN
+- which rules generated added FP
+- which rules can operate on an existing model span only
+
+Do not modify the frozen implementation.
+
+CHECKPOINT 1/5 — Anchored-refinement design
+
+Report:
+- existing DATE_TIME boundary rules
+- which rules will be retained
+- which broad candidate-generation behavior will be removed
+- exact definition of an eligible existing model prediction
+- why the new procedure does not require GT
+
+STEP 2 — Create isolated Variant B
+
+Create:
+
+`scripts/gliner_datetime_anchored_refinement.py`
+
+Tests:
+
+`tests/test_gliner_datetime_anchored_refinement.py`
+
+Docs:
+
+`docs/datetime-anchored-refinement.md`
+
+Variant B MUST:
+
+1. Load existing persisted GLiNER predictions.
+2. Select only predictions whose normalized type is DATE_TIME.
+3. Keep all original model predictions unchanged.
+4. For each DATE_TIME model prediction, inspect only a bounded source neighborhood around the existing model span.
+5. Use deterministic structural parsing to determine whether the existing span should have:
+   - peripheral punctuation removed
+   - legitimate AM/PM retained
+   - legitimate timezone suffix retained
+   - date/time attachment retained
+   - obvious structural punctuation normalized
+
+6. Produce at most ONE refined replacement candidate for an eligible existing DATE_TIME prediction.
+7. Never create a DATE_TIME prediction from a source region that has no existing GLiNER DATE_TIME anchor.
+8. Never remove an existing model prediction silently.
+
+IMPORTANT:
+This is a refinement experiment, not a detector replacement.
+
+STEP 3 — Define anchored eligibility
+
+The candidate must:
+- overlap an existing GLiNER DATE_TIME span
+- originate from the same source neighborhood
+- preserve the semantic/date-time identity implied by the existing model span
+- differ only through explicit structural boundary rules
+
+Do NOT:
+- expand arbitrarily to surrounding prose
+- convert a time into a date+time unless the existing model span already supports that structure
+- delete digits to match GT
+- remove valid timezone information
+- infer missing years/months/dates
+- infer relative dates
+- infer geographic timezone
+- use language or dataset identity
+- use GT for eligibility
+
+Ambiguous cases must be rejected and counted.
+
+STEP 4 — Replacement accounting
+
+Unlike the earlier append-only experiment, this experiment may evaluate a REFINED replacement of an existing DATE_TIME model span.
+
+However, for every replacement report:
+- original model prediction count
+- refined prediction count
+- number of replacements
+- number of unchanged predictions
+- number of rejected refinements
+- number of deleted predictions
+- number of changed predictions
+
+Expected:
+- no DATE_TIME model prediction disappears without either remaining unchanged or being replaced by exactly one refined candidate
+- no non-DATE_TIME prediction changes
+
+Every replacement must be traceable to exactly one original DATE_TIME prediction.
+
+STEP 5 — Evaluate all six conditions
+
+Use:
+- AI4Privacy
+- Gretel
+- Argilla
+
+at:
+- threshold 0.3
+- threshold 0.7
+
+Use ONLY persisted predictions.
+
+Compare:
+
+BASELINE
+PREVIOUS DATE_TIME VARIANT
+ANCHORED VARIANT B
+
+For DATE_TIME report:
+- TP / FP / FN
+- precision / recall / F1
+- ΔTP
+- ΔFP
+- ΔFN
+- ΔF1
+
+Also report:
+- exact boundary matches
+- candidate inside GT
+- GT inside candidate
+- partial overlaps
+- no-overlap
+- replacement count
+- unchanged count
+- rejected refinement count
+
+STEP 6 — Critical subspan diagnostic
+
+Explicitly measure whether anchored refinement reduces the previous problem:
+
+`candidate core inside longer GT`
+
+Report this separately for every dataset/threshold.
+
+Also report:
+- added/changed predictions that became exact
+- changed predictions that remain nonexact
+- changed predictions that become FP
+- changed predictions that recover FN
+
+Do not export PII values, text snippets, raw offsets, or IDs.
+
+STEP 7 — Regression protection
+
+Verify:
+- all non-DATE_TIME predictions unchanged
+- prediction file hashes unchanged
+- input hashes unchanged
+- baseline metrics reproduced exactly
+- frozen previous DATE_TIME experiment files unchanged
+- phone/email/credit-card experiments unchanged
+- scorer unchanged
+- ontology unchanged
+- zero inference
+
+STEP 8 — Tests
+
+Cover:
+- punctuation trimming around an existing model span
+- AM/PM preservation
+- timezone preservation
+- bounded neighborhood behavior
+- no anchor → no candidate
+- one anchor → at most one refined prediction
+- ambiguous refinement rejected
+- replacement accounting
+- non-DATE_TIME invariance
+- malformed source handling
+- no GT-dependent refinement
+- original prediction preservation
+
+Use synthetic fixtures only.
+
+CHECKPOINT 2/5 — Anchored implementation complete
+
+Report:
+- exact refinement rules
+- exact eligibility rules
+- replacement semantics
+- changed files
+
+CHECKPOINT 3/5 — Tests complete
+
+Report:
+- number of tests
+- pass/fail
+- elapsed time
+
+CHECKPOINT 4/5 — Six evaluations complete
+
+For each dataset:
+`CHECKPOINT — <dataset> anchored DATE_TIME evaluation complete`
+
+Report:
+- baseline → previous variant → anchored Variant B
+- DATE_TIME P/R/F1
+- TP/FP/FN
+- replacement counts
+- subspan-FP counts
+- elapsed time
+- ETA only when justified by measured progress
+
+CHECKPOINT 5/5 — Anchored DATE_TIME analysis complete
+
+Final response must contain:
+- exact files changed
+- exact commands
+- test results
+- six-condition comparison
+- subspan-FP comparison
+- replacement accounting
+- regression invariants
+- warnings/limitations
+- factual conclusion
+
+The most important question is:
+
+**Did anchoring refinement preserve useful boundary recoveries while reducing the new subspan FP seen in the previous experiment?**
+
+If it does not, STOP DATE_TIME experimentation.
+Do not implement another DATE_TIME heuristic.
+
+Do NOT commit automatically.
+Leave Variant B uncommitted for review.
+
+High

@@ -40,3 +40,28 @@ Both PHONE_NUMBER candidate generation and phone boundary refinement are reviewe
 **Why:** The user explicitly declared both phone variants frozen before beginning the credit-card experiment.
 
 **How to apply:** Implement new detector trials in isolated files and verify the frozen phone files remain unchanged.
+
+## Credit-card experiment disposition
+
+The CREDIT_CARD experiment is a NEGATIVE RESULT and must remain offline-only.
+Do not promote either existing CREDIT_CARD variant.
+
+**Why:** The user explicitly specified this disposition before the DATE_TIME experiment.
+
+**How to apply:** Preserve the card experiment during separately scoped work;
+do not treat semantic checksum validity as evidence supporting production promotion.
+
+## Date/time experiment controls
+
+DATE_TIME experiments must preserve every existing model prediction, including
+existing DATE_TIME predictions. Only newly generated candidates may differ.
+Do not use GT to choose boundaries or language/dataset identity to choose date formats.
+Preserve legitimate timezone suffixes, AM/PM and date-time attachment even when GT
+uses different boundaries.
+
+**Why:** The user explicitly required source-only boundary quality experiments,
+not benchmark-specific annotation matching or production changes.
+
+**How to apply:** Generate and refine from original source text before GT diagnostics.
+Keep decisions deterministic and generic, verify append-only preservation and
+frozen input bytes, and leave new experiments uncommitted for review.

@@ -1,0 +1,280 @@
+We are continuing Phase 1.5 after completing the CREDIT_CARD experiment.
+
+The CREDIT_CARD experiment is a NEGATIVE RESULT and must remain offline-only.
+Do not promote either CREDIT_CARD variant.
+
+We now begin a new isolated experiment:
+
+DATE_TIME candidate generation + boundary refinement.
+
+IMPORTANT:
+- OFFLINE EXPERIMENT ONLY
+- DO NOT run GLiNER inference
+- DO NOT modify production detector code
+- DO NOT modify GLiNER
+- DO NOT change threshold
+- DO NOT change max_width
+- DO NOT regenerate predictions
+- DO NOT modify persisted prediction artifacts
+- DO NOT modify the strict scorer
+- DO NOT use GT to choose candidate boundaries
+- DO NOT add cross-type suppression
+- DO NOT use dataset-specific heuristics
+
+Evidence motivating this experiment:
+- Gretel DATE_TIME FN are predominantly span mismatches:
+  - 135/140 at threshold 0.3
+  - 127/156 at threshold 0.7
+- AI4Privacy DATE_TIME also has substantial remaining FN and observed boundary mismatch behavior.
+- PHONE_NUMBER experiments demonstrated that source-only boundary refinement can recover some errors while preserving model predictions.
+- CREDIT_CARD experiments showed that semantic candidate validation alone is not robust enough, so this experiment must focus specifically on boundary quality.
+
+INPUTS
+
+Use:
+- exact reconstructed normalized OOD datasets
+- exact persisted GLiNER predictions
+- existing strict scorer
+- existing OOD analyzer
+- existing ontology/type mapping
+
+Datasets:
+- AI4Privacy
+- Gretel
+- Argilla
+
+Thresholds:
+- 0.3
+- 0.7
+
+No threshold tuning.
+
+STEP 1 — Inspect DATE_TIME evidence
+
+Inspect:
+- existing OOD error reports
+- per-type DATE_TIME FN/FP diagnostics
+- span/boundary diagnostics
+- ontology mappings
+- existing hybrid experiment architecture
+
+CHECKPOINT 1/5 — DATE_TIME evidence analysis
+
+Report:
+- DATE_TIME baseline metrics for all six conditions
+- FN categories
+- FP categories
+- exact boundary-error categories
+- recurring structural boundary patterns
+- whether patterns are suitable for a source-only deterministic refinement
+
+Do not implement anything until these patterns are understood.
+
+STEP 2 — Build isolated experiment
+
+Create:
+
+`scripts/gliner_datetime_boundary_refinement.py`
+
+Tests:
+
+`tests/test_gliner_datetime_boundary_refinement.py`
+
+Docs:
+
+`docs/datetime-boundary-refinement.md`
+
+The experiment must operate on the ORIGINAL SOURCE TEXT and the existing persisted GLiNER predictions.
+
+Do not use GT during candidate generation/refinement.
+
+STEP 3 — Candidate extraction
+
+Generate deterministic DATE_TIME candidates using an explicit, documented strategy.
+
+Candidate classes may include:
+- calendar dates
+- times
+- date + time combinations
+- ISO-like timestamps
+- timezone-qualified timestamps
+
+Do not attempt broad natural-language date understanding.
+
+Prefer high-precision structural patterns over permissive NLP.
+
+Every candidate must preserve original source `[start,end)` boundaries.
+
+STEP 4 — Boundary refinement
+
+The main experiment is boundary refinement.
+
+Allowed refinements may include:
+- stripping peripheral punctuation
+- removing unmatched closing punctuation
+- preserving legitimate timezone suffixes
+- preserving AM/PM
+- preserving date-time attachment when it is part of the candidate
+- choosing a unique tightest structurally valid candidate
+- rejecting ambiguous candidates
+
+Do NOT:
+- delete digits to match GT
+- remove a valid timezone merely because GT excludes it
+- expand a candidate to match GT
+- split a valid date/time into a different semantic value
+- use GT boundaries to select a candidate
+- use language/dataset identity to choose date formats
+
+Every refinement rule must be:
+- deterministic
+- source-only
+- generic
+- documented
+
+STEP 5 — Candidate validation
+
+For every candidate, report aggregate counts:
+
+- raw candidates
+- structurally valid
+- rejected
+- exact duplicate
+- refined
+- unchanged
+- ambiguous
+
+Do not export:
+- plaintext dates/times
+- snippets
+- raw offsets
+- example IDs
+
+STEP 6 — Boundary classification
+
+After candidate generation, use GT only for evaluation.
+
+Classify candidate/GT relations:
+
+- exact match
+- candidate inside GT
+- GT inside candidate
+- partial overlap
+- no DATE_TIME GT overlap
+
+This is diagnostic only.
+
+STEP 7 — Evaluate all six conditions
+
+For each dataset and threshold compare:
+
+BASELINE
+DATE_TIME TP / FP / FN
+P / R / F1
+
+VARIANT
+DATE_TIME TP / FP / FN
+P / R / F1
+
+DELTA
+ΔTP
+ΔFP
+ΔFN
+Δprecision
+Δrecall
+ΔF1
+
+Also report overall:
+- full-strict P/R/F1
+- gateway-supported-only P/R/F1
+
+But DATE_TIME-specific results are the primary experiment metric.
+
+STEP 8 — Regression invariants
+
+Verify:
+- all existing GLiNER predictions preserved
+- zero deleted model predictions
+- zero changed non-DATE_TIME predictions
+- zero changed existing DATE_TIME model predictions
+- only newly generated DATE_TIME candidates may differ
+- input hashes unchanged
+- persisted prediction hashes unchanged
+- existing phone/email/credit-card experiment files unchanged
+
+STEP 9 — Tests
+
+Add deterministic tests for:
+- punctuation boundaries
+- unmatched closing punctuation
+- date-only candidates
+- time-only candidates
+- date+time candidates
+- AM/PM
+- timezone suffix preservation
+- ambiguous candidate rejection
+- malformed candidate rejection
+- exact duplicate handling
+- source-boundary preservation
+- no GT-dependent candidate logic
+- non-DATE_TIME invariance
+
+Use synthetic examples only.
+
+Run:
+- new DATE_TIME tests
+- frozen phone tests
+- frozen credit-card tests
+- email/analyzer tests
+- Ruff
+- py_compile/type checks as appropriate
+
+Do not run GLiNER inference.
+
+CHECKPOINT 2/5 — Candidate generator complete
+
+Report:
+- exact candidate patterns
+- validation policy
+- boundary rules
+- ambiguous/rejected cases
+
+CHECKPOINT 3/5 — Tests complete
+
+Report:
+- test count
+- test result
+- elapsed time
+
+CHECKPOINT 4/5 — Six evaluations complete
+
+For each dataset:
+
+`CHECKPOINT — <dataset> DATE_TIME evaluation complete`
+
+Report:
+- baseline DATE_TIME P/R/F1
+- variant DATE_TIME P/R/F1
+- TP/FP/FN delta
+- boundary category changes
+- elapsed time
+- ETA only when justified by measured progress
+
+CHECKPOINT 5/5 — DATE_TIME experiment analysis complete
+
+Final response must contain:
+- exact files changed
+- exact commands
+- test results
+- six-condition DATE_TIME comparison
+- overall supported-only effect
+- boundary recovery/FP accounting
+- regression invariants
+- warnings/limitations
+- clear distinction between observations and hypotheses
+- whether DATE_TIME boundary refinement should be retained as an offline experiment
+- whether another DATE_TIME variant is justified
+
+Do NOT commit automatically.
+Leave the experiment uncommitted for review.
+High

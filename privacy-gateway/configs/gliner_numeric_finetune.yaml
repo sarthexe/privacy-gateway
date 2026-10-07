@@ -1,0 +1,196 @@
+# Offline GLiNER-PII numeric fine-tuning experiment. Not a production config.
+#
+# The 55 native prompt labels come from configs/gliner_label_map.yaml and are not
+# repeated here. `other_numeric` is a training-only prompt label. It has no gateway
+# type and must not be added to configs/pii_ontology.yaml.
+experiment: gliner-numeric-finetune/v1
+seed: 20261006
+
+base_model:
+  model_id: nvidia/gliner-PII
+  revision: bd23e8ef4425fd04e34c5204ab49ffaa706eae79
+  gliner_version: "0.2.29"
+  architecture: UniEncoderSpanGLiNER
+  span_mode: markerV0
+  encoder: microsoft/deberta-v3-large
+  words_splitter_type: whitespace
+  # Changing the base checkpoint requires setting this to true on purpose.
+  allow_unpinned_base: false
+
+labels:
+  label_map: configs/gliner_label_map.yaml
+  training_only: [other_numeric]
+  focus:
+    - credit_debit_card
+    - account_number
+    - bank_routing_number
+    - customer_id
+    - employee_id
+    - national_id
+    - swift_bic
+  # Reported separately in the manifest; not oversampled.
+  numeric_competitors:
+    - ipv4
+    - ipv6
+    - date
+    - date_time
+    - time
+    - date_of_birth
+    - postcode
+    - street_address
+    - phone_number
+    - fax_number
+    - ssn
+    - tax_id
+    - cvv
+    - pin
+    - medical_record_number
+    - health_plan_beneficiary_number
+    - certificate_license_number
+    - license_plate
+    - vehicle_identifier
+    - unique_id
+    - device_identifier
+    - mac_address
+    - coordinate
+
+data:
+  max_words: 384
+  max_width: 24
+  dev_fraction: 0.05
+  # Keep the 2,000-row threshold-selection subset of Nemotron train out of both
+  # train and dev, so it stays usable for a later threshold check.
+  reserve_threshold_selection_subset: true
+  sources:
+    nemotron_train:
+      enabled: true
+      repository: nvidia/Nemotron-PII
+      revision: b70ffaf5ff39e079776134c5bf4381f00a9fd1ed
+      split: train
+    # Off by default: training on these splits makes the matching OOD benchmark
+    # in-distribution. Enabling either one requires --benchmark-normalized.
+    ai4privacy_train:
+      enabled: false
+      split: train
+    gretel_train:
+      enabled: false
+      split: train
+  balancing:
+    focus_oversample_factor: 3
+    max_focus_share: 0.40
+    min_focus_share: 0.15
+  hard_negatives:
+    train_count: 8000
+    dev_count: 800
+    card_shaped_fraction: 0.25
+    multi_span_fraction: 0.20
+    unlabeled_quantity_fraction: 0.05
+    native_context_fraction: 0.20
+    other_numeric_contexts:
+      - invoice number
+      - order number
+      - transaction reference
+      - reference number
+      - ticket number
+      - tracking number
+      - confirmation number
+      - case number
+      - document number
+      - record number
+    # Values after these phrases are real identifiers in the native vocabulary, so
+    # they keep their native label rather than other_numeric.
+    native_contexts:
+      employee ID: employee_id
+      customer ID: customer_id
+
+training:
+  default_profile: t4_head_only
+  max_width: 24
+  dataloader_num_workers: 0
+  report_to: none
+  deterministic_algorithms: false
+  hash_base_weights: true
+  # Examples whose label prompt plus words exceed the tokenizer limit would be
+  # truncated silently by gliner. They are dropped and counted; above this
+  # fraction training refuses to start.
+  max_subword_overflow_fraction: 0.01
+  # Periodic eval loss uses this prefix of the shuffled dev file. Strict span
+  # metrics come from evaluate_gliner_numeric_finetune.py, not from the trainer.
+  eval_dev_examples: 1000
+  pilot:
+    max_steps: 10
+    limit_train_examples: 64
+    limit_dev_examples: 16
+    save_steps: 5
+    eval_steps: 5
+    logging_steps: 1
+  profiles:
+    # Encoder frozen: fits a 15 GB T4 with margin and limits forgetting.
+    t4_head_only:
+      freeze_components: [text_encoder]
+      gradient_checkpointing: false
+      fp16: false
+      bf16: false
+      learning_rate: 1.0e-5
+      others_lr: 3.0e-5
+      weight_decay: 0.01
+      others_weight_decay: 0.01
+      per_device_train_batch_size: 1
+      per_device_eval_batch_size: 1
+      gradient_accumulation_steps: 8
+      max_steps: 4000
+      warmup_ratio: 0.05
+      lr_scheduler_type: linear
+      max_grad_norm: 1.0
+      save_steps: 250
+      eval_steps: 250
+      save_total_limit: 3
+      logging_steps: 25
+      focal_loss_alpha: -1.0
+      focal_loss_gamma: 0.0
+      loss_reduction: sum
+      negatives: 1.0
+      masking: none
+    # Full encoder update. Not validated on a T4; run a pilot first.
+    full_encoder:
+      freeze_components: []
+      gradient_checkpointing: true
+      fp16: false
+      bf16: false
+      learning_rate: 5.0e-6
+      others_lr: 2.0e-5
+      weight_decay: 0.01
+      others_weight_decay: 0.01
+      per_device_train_batch_size: 1
+      per_device_eval_batch_size: 1
+      gradient_accumulation_steps: 16
+      max_steps: 4000
+      warmup_ratio: 0.05
+      lr_scheduler_type: linear
+      max_grad_norm: 1.0
+      save_steps: 250
+      eval_steps: 250
+      save_total_limit: 3
+      logging_steps: 25
+      focal_loss_alpha: -1.0
+      focal_loss_gamma: 0.0
+      loss_reduction: sum
+      negatives: 1.0
+      masking: none
+
+evaluation:
+  thresholds: [0.3, 0.7]
+  max_width: 24
+  batch_size: 1
+  dtype: fp32
+  target_types: [CREDIT_CARD, BANK_ACCOUNT, ID_CARD]
+  highlighted_types: [CREDIT_CARD, BANK_ACCOUNT, ID_CARD, IP_ADDRESS, DATE_TIME]
+  safety_gate:
+    supported_only_f1_max_drop: 0.005
+    major_types: [PERSON, EMAIL_ADDRESS, PHONE_NUMBER, CREDIT_CARD, IP_ADDRESS, DATE_TIME, LOCATION]
+    major_type_f1_max_drop: 0.02
+    major_type_min_support: 50
+    native_label_f1_max_drop: 0.03
+    native_label_min_support: 30
+    other_numeric_absorbed_max_fraction: 0.005
+    tp_lost_to_other_numeric_max_fraction: 0.001

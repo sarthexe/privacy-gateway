@@ -1,0 +1,104 @@
+{
+  "completed_examples": 100000,
+  "sessions": [
+    {
+      "batch_latency_seconds": {
+        "max": 67.92085209099969,
+        "p50": 51.83013731600022,
+        "p95": 57.866319019
+      },
+      "batch_size": 1,
+      "chunks": 22089,
+      "examples": 19712,
+      "examples_per_second": 5.0,
+      "gpu_peak_allocated_mib": 2415,
+      "gpu_peak_reserved_mib": 2870,
+      "hardware": {
+        "cpu": "x86_64",
+        "cpu_logical_cores": 2,
+        "cpu_physical_cores": 1,
+        "cuda_runtime": "12.8",
+        "device": "cuda",
+        "gpu": "Tesla T4",
+        "gpu_compute_capability": "7.5",
+        "gpu_driver": "580.82.07",
+        "gpu_memory_gib": 14.56,
+        "platform": "Linux-6.6.122+-x86_64-with-glibc2.39",
+        "python": "3.13.15",
+        "ram_gib": 12.7,
+        "torch_threads": 1
+      },
+      "inference_seconds": 3942.781,
+      "max_width": 24,
+      "model_load_seconds": 14.81,
+      "per_example_latency_ms_mean": 200.02,
+      "processes": 1,
+      "read_batch": 256,
+      "resources": {
+        "gpu_memory_used_mib_max": 3003.0,
+        "gpu_memory_used_mib_mean": 2961.6,
+        "gpu_util_percent_max": 100.0,
+        "gpu_util_percent_mean": 91.2,
+        "process_cpu_percent_max": 106.8,
+        "process_cpu_percent_mean": 98.8,
+        "rss_mib_max": 2309.2,
+        "rss_mib_mean": 2308.0,
+        "samples": 1887,
+        "system_cpu_percent_max": 99.8,
+        "system_cpu_percent_mean": 67.8
+      },
+      "resumed_from": 2816,
+      "wall_seconds": 3945.24
+    },
+    {
+      "batch_latency_seconds": {
+        "max": 71.85252952799965,
+        "p50": 60.16407966200131,
+        "p95": 67.82241123599988
+      },
+      "batch_size": 1,
+      "chunks": 87103,
+      "examples": 77472,
+      "examples_per_second": 4.35,
+      "gpu_peak_allocated_mib": 2405,
+      "gpu_peak_reserved_mib": 4768,
+      "hardware": {
+        "cpu": "x86_64",
+        "cpu_logical_cores": 2,
+        "cpu_physical_cores": 1,
+        "cuda_runtime": "12.8",
+        "device": "cuda",
+        "gpu": "Tesla T4",
+        "gpu_compute_capability": "7.5",
+        "gpu_driver": "580.82.07",
+        "gpu_memory_gib": 14.56,
+        "platform": "Linux-6.6.122+-x86_64-with-glibc2.39",
+        "python": "3.13.15",
+        "ram_gib": 12.7,
+        "torch_threads": 1
+      },
+      "inference_seconds": 17789.473,
+      "max_width": 24,
+      "model_load_seconds": 17.27,
+      "per_example_latency_ms_mean": 229.62,
+      "processes": 1,
+      "read_batch": 256,
+      "resources": {
+        "gpu_memory_used_mib_max": 4901.0,
+        "gpu_memory_used_mib_mean": 3898.6,
+        "gpu_util_percent_max": 100.0,
+        "gpu_util_percent_mean": 92.6,
+        "process_cpu_percent_max": 102.1,
+        "process_cpu_percent_mean": 98.9,
+        "rss_mib_max": 2319.0,
+        "rss_mib_mean": 2317.9,
+        "samples": 8471,
+        "system_cpu_percent_max": 100.0,
+        "system_cpu_percent_mean": 66.7
+      },
+      "resumed_from": 22528,
+      "wall_seconds": 17801.13
+    }
+  ],
+  "target_examples": 100000
+}

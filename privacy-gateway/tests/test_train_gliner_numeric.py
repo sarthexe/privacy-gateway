@@ -268,6 +268,52 @@ def test_overflow_preflight_uses_encoder_limit_without_truncating() -> None:
     assert calls and all(call["truncation"] is False for call in calls)
 
 
+def test_builder_windows_agree_with_trainer_overflow_preflight() -> None:
+    class Tokenizer:
+        model_max_length = 10**30
+
+        @staticmethod
+        def __call__(words: list[str], **kwargs: Any) -> dict[str, list[int]]:
+            count = 2 + sum(3 if word == "multisub" else 1 for word in words)
+            return {"input_ids": list(range(count))}
+
+    class Processor:
+        transformer_tokenizer = Tokenizer()
+
+        @staticmethod
+        def prepare_inputs(
+            texts: list[list[str]], labels: list[list[str]]
+        ) -> tuple[list[list[str]], list[int]]:
+            prompt = [part for label in labels[0] for part in ("<<ENT>>", label)]
+            prompt.append("<<SEP>>")
+            return [prompt + texts[0]], [len(prompt)]
+
+    processor = Processor()
+    encoder = SimpleNamespace(config=SimpleNamespace(max_position_embeddings=30))
+    model = SimpleNamespace(
+        data_processor=processor,
+        _get_freezable_components=lambda: {"text_encoder": encoder},
+    )
+    labels = ["email", "account_number"]
+    text = " ".join(["multisub"] * 30)
+    windows = prepare.align_example(
+        text,
+        (),
+        384,
+        24,
+        prompt_labels=labels,
+        input_sizer=common.GlinerInputSizer(processor, 30),
+    )
+    records = [
+        prepare.gliner_record(window, labels, 7, f"window:{index}", "test", "natural", "g")
+        for index, window in enumerate(windows)
+    ]
+    kept, dropped, limit = train.drop_subword_overflow(model, records)
+    assert kept == records
+    assert dropped == 0
+    assert limit == 30
+
+
 # --- Settings ----------------------------------------------------------------------------
 
 
@@ -372,6 +418,24 @@ def test_missing_training_packages_fail_before_any_output(
 
 
 def small_dataset(tmp_path: Path) -> Path:
+    class Tokenizer:
+        model_max_length = 10**30
+
+        @staticmethod
+        def __call__(words: list[str], **kwargs: Any) -> dict[str, list[int]]:
+            return {"input_ids": list(range(len(words) + 2))}
+
+    class Processor:
+        transformer_tokenizer = Tokenizer()
+
+        @staticmethod
+        def prepare_inputs(
+            texts: list[list[str]], labels: list[list[str]]
+        ) -> tuple[list[list[str]], list[int]]:
+            prompt = [part for label in labels[0] for part in ("<<ENT>>", label)]
+            prompt.append("<<SEP>>")
+            return [prompt + texts[0]], [len(prompt)]
+
     rows = [
         {
             "uid": f"u{index}",
@@ -382,7 +446,13 @@ def small_dataset(tmp_path: Path) -> Path:
     ]
     spec = prepare.SourceSpec("nemotron_train", "nemotron", "train", "r", lambda: rows, 5_000)
     out = tmp_path / "data"
-    prepare.build_dataset(CONFIG, [spec], out, synthetic_counts=(10, 4))
+    prepare.build_dataset(
+        CONFIG,
+        [spec],
+        out,
+        synthetic_counts=(10, 4),
+        input_sizer=common.GlinerInputSizer(Processor(), 10_000),
+    )
     return out
 
 
@@ -398,6 +468,16 @@ def test_manifest_and_files_must_match_the_config(tmp_path: Path) -> None:
     with (dataset / "train.jsonl").open("a", encoding="utf-8", newline="\n") as handle:
         handle.write("{}\n")
     with pytest.raises(NumericExperimentError, match="does not match"):
+        train.load_manifest(dataset, CONFIG)
+
+
+def test_word_only_dataset_manifest_requires_rebuild(tmp_path: Path) -> None:
+    dataset = small_dataset(tmp_path)
+    path = dataset / "manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    del manifest["format"]["subword_windowing"]
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(NumericExperimentError, match="tokenizer-aware windowing"):
         train.load_manifest(dataset, CONFIG)
 
 

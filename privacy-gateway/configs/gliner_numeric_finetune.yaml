@@ -55,6 +55,9 @@ labels:
     - coordinate
 
 data:
+  # Secondary word-count ceiling. The builder also loads the pinned tokenizer
+  # and splits each example to fit the encoder's actual subword-token limit
+  # after GLiNER serializes the complete label prompt.
   max_words: 384
   max_width: 24
   dev_fraction: 0.05

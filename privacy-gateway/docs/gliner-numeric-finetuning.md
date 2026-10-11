@@ -49,8 +49,34 @@ annotation (bad offsets, unknown Nemotron label) aborts the build. OOD examples
 with an UNMAPPED span are dropped, since that span would otherwise become an
 unlabeled false negative.
 
-**Windows.** Texts longer than 384 words (the model's `max_len`) are cut into
-consecutive windows that never split an entity.
+**Windows.** The builder loads only the pinned checkpoint's GLiNER config and
+tokenizer; it does not load model weights. It instantiates gliner 0.2.29's
+`UniEncoderSpanProcessor`, which serializes every prompted label as the two
+pre-tokenized words `<<ENT>>`, `<label>`, appends `<<SEP>>`, then prepends that
+prompt to the text words. The combined sequence is tokenized with the pinned
+DeBERTa tokenizer using `is_split_into_words=True`, normal special-token
+insertion, and `truncation=False`.
+
+The effective subword limit is the stricter valid value from
+`tokenizer.model_max_length` and the pinned encoder config's
+`max_position_embeddings`. For this checkpoint the tokenizer exposes Hugging
+Face's large unknown-limit sentinel, so the encoder's 512-token limit is used.
+GLiNER's `max_len=384` is only a secondary word-count ceiling; it is not treated
+as a subword budget.
+
+For each source example, the builder greedily chooses the largest consecutive
+window that satisfies both ceilings. Candidate boundaries are only positions
+that do not cut an entity. Exact token counts use the final deterministic label
+prompt for that window. A binary search limits repeated tokenization. The
+resulting word ranges are cached and reused during the builder's second pass,
+so natural examples are not tokenized twice.
+
+If the prompt itself cannot fit, or a single word/entity cannot fit together
+with the prompt, the whole source example is rejected with
+`prompt_exceeds_subword_budget`, `word_exceeds_subword_budget`, or
+`entity_exceeds_subword_budget`. No offset or annotation is changed. All
+windows from one source example retain the same grouping keys and therefore
+cannot cross the train/dev split.
 
 **Record format** (gliner 0.2.29 `UniEncoderSpanProcessor`):
 
@@ -82,7 +108,7 @@ paths inside the package tree are refused):
 | `train.jsonl` | Training records in a seeded global order, so a prefix is a fair limit |
 | `dev.jsonl` | Dev records for eval loss |
 | `dev_normalized.jsonl` | The same dev windows as `{text, entities, native_entities}` for strict scoring |
-| `manifest.json` | Aggregates only: counts, label frequencies, rejection reasons, revisions, hashes, seed, config hashes |
+| `manifest.json` | Aggregates only: counts, label frequencies, rejection reasons, tokenizer/encoder/effective limits, revisions, hashes, seed, config hashes |
 
 The manifest never contains text, entity values, or source IDs (a test checks
 this). Builder stdout prints counts only.
@@ -152,20 +178,13 @@ The manifest records `focus_share`, `focus_example_share`, copy and synthetic
 counts, and per-label mention counts for train, dev, and each train kind
 (`train_natural`, `train_oversampled`, `train_synthetic`).
 
-Smoke build: first 200 Nemotron train rows, 200 synthetic train, 40 synthetic
-dev, run twice with byte-identical outputs.
-
-| Quantity | Value |
-|---|---|
-| Rows read / accepted | 200 / 195 (4 misaligned span boundaries, 1 span wider than 24 words) |
-| Train records | 499 (187 natural, 112 oversampled, 200 synthetic) |
-| Dev records | 53 (13 natural, 40 synthetic) |
-| Focus share (mentions) | 0.205 (479 / 2,335) |
-| Synthetic card-shaped (train) | 4 Luhn-valid, 4 Luhn-invalid, all `other_numeric` |
-
-The smoke build overweights synthetic data. In the full build, about 8,000
-synthetic examples sit beside the full Nemotron train split, so the cap rarely
-binds. Read the full counts from that run's manifest.
+A smoke build can still limit source and synthetic counts, but its output now
+depends on the pinned tokenizer's exact subword expansion. Read window,
+rejection, and label counts from that run's manifest rather than comparing them
+to the obsolete word-only builder counts. Re-running with the same source
+revision, tokenizer revision, seed, and config produces byte-identical files.
+The trainer rejects manifests that predate tokenizer-aware windowing, so delete
+the old external dataset directory and rebuild it before rerunning a pilot.
 
 ## Training
 
@@ -226,7 +245,7 @@ step 5) and is the only mode allowed on a `--limit-source-rows` smoke dataset.
 | `freeze_component()` only warns on an unknown component | Check the name against `_get_freezable_components()` and verify `requires_grad` is off |
 | No GLiNER-level gradient checkpointing; the HF flag would call it on the wrapper | Keep `TrainingArguments.gradient_checkpointing=False`; call `gradient_checkpointing_enable(use_reentrant=False)` on the DeBERTa encoder |
 | `Trainer.training_step` catches CUDA OOM, logs "Skipping batch", and returns loss 0 | A log handler counts those warnings and a callback aborts the run |
-| The processor truncates over-long prompt-plus-text input with only a warning | Pre-tokenize and drop over-limit examples, counted and capped |
+| The processor truncates over-long prompt-plus-text input with only a warning | The builder creates exact-token, entity-safe windows. The trainer independently repeats the same no-truncation count and retains the 1% fail-closed guard |
 | Native `max_width` is 12 | `from_pretrained(max_width=24)` to match the frozen protocol; checked after load |
 | Checkpoint format follows `save_safetensors` in the installed transformers | Record final file hashes, whichever format is written |
 
@@ -355,6 +374,14 @@ Error messages name a file, a line or row number, and a fixed reason.
   is unverified on a T4.
 - Synthetic contexts are English and template-based. Gains on them may not
   transfer to real documents.
+- Token-aware windows are specific to gliner 0.2.29, the pinned tokenizer, and
+  each example's prompted label set. Changing any of those requires rebuilding
+  the dataset. Preparation needs those tokenizer/config files available from
+  the Hub or local cache.
+- Windowing is non-overlapping and preserves every entity exactly, but removes
+  cross-window context. An entity or individual word that cannot fit with the
+  complete prompt causes the source example to be rejected rather than
+  truncated or re-annotated.
 - Nemotron's annotation conventions define the natural positives. OOD
   benchmarks label numeric types differently, so strict F1 can fall even when
   the model behaves sensibly. Read per-type and forgetting tables, not only the

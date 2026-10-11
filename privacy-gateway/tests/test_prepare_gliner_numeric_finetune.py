@@ -14,6 +14,7 @@ from scripts.gliner_credit_card_experiment import luhn
 from scripts.gliner_evaluation import load_label_map, whitespace_words
 from scripts.gliner_numeric_common import (
     OTHER_NUMERIC,
+    GlinerInputSizer,
     NumericConfig,
     NumericExperimentError,
     is_forbidden_split,
@@ -24,6 +25,40 @@ from scripts.nemotron_pii import REPOSITORY_ROOT, load_ontology
 
 CONFIG = load_config()
 SECRET_MARKERS = ("Zephyrine", "Quillon", "4111 1111 1111 1111", "zq@example.test")
+
+
+class FakeTokenizer:
+    model_max_length = 10**30
+
+    def __init__(self, pieces: dict[str, int] | None = None) -> None:
+        self.pieces = pieces or {}
+
+    def __call__(self, words: list[str], **kwargs: Any) -> dict[str, list[int]]:
+        assert kwargs == {"is_split_into_words": True, "truncation": False}
+        count = 2 + sum(self.pieces.get(word, 1) for word in words)
+        return {"input_ids": list(range(count))}
+
+
+class FakeProcessor:
+    def __init__(self, pieces: dict[str, int] | None = None) -> None:
+        self.transformer_tokenizer = FakeTokenizer(pieces)
+
+    @staticmethod
+    def prepare_inputs(
+        texts: list[list[str]], labels: list[list[str]]
+    ) -> tuple[list[list[str]], list[int]]:
+        prompt = [part for label in labels[0] for part in ("<<ENT>>", label)]
+        prompt.append("<<SEP>>")
+        return [prompt + texts[0]], [len(prompt)]
+
+
+def input_sizer(limit: int = 10_000, pieces: dict[str, int] | None = None) -> GlinerInputSizer:
+    return GlinerInputSizer(
+        FakeProcessor(pieces),
+        limit,
+        tokenizer_model_max_length=10**30,
+        encoder_max_position_embeddings=limit,
+    )
 
 
 def config_with(**changes: Any) -> NumericConfig:
@@ -83,6 +118,7 @@ def build(tmp_path: Path, name: str, rows: list[dict[str, Any]], **kwargs: Any) 
         [source(rows)],
         tmp_path / name,
         synthetic_counts=kwargs.pop("synthetic_counts", (40, 10)),
+        input_sizer=kwargs.pop("input_sizer", input_sizer()),
         **kwargs,
     )
 
@@ -142,6 +178,154 @@ def test_windows_never_cut_an_entity_and_offsets_survive() -> None:
     _, local_start, local_end = second.char_entities[0]
     assert second.text[local_start:local_end] == text[start:end]
     assert all(len(window.tokens) <= 10 for window in (first, second, *rest))
+
+
+def test_token_window_accepts_an_example_within_512_subwords() -> None:
+    text = " ".join(f"word{index}" for index in range(300))
+    windows = prepare.align_example(
+        text,
+        (),
+        384,
+        24,
+        prompt_labels=["email"],
+        input_sizer=input_sizer(512),
+    )
+    assert len(windows) == 1
+    assert input_sizer(512).fits(windows[0].tokens, ["email"])
+
+
+def test_token_window_divides_a_long_example() -> None:
+    text = " ".join(f"word{index}" for index in range(600))
+    sizer = input_sizer(512)
+    windows = prepare.align_example(
+        text,
+        (),
+        1_000,
+        24,
+        prompt_labels=["email"],
+        input_sizer=sizer,
+    )
+    assert len(windows) == 2
+    assert [len(window.tokens) for window in windows] == [507, 93]
+    assert all(sizer.fits(window.tokens, ["email"]) for window in windows)
+
+
+def test_token_window_accounts_for_words_with_multiple_subwords() -> None:
+    text = " ".join(["multisub"] * 200)
+    sizer = input_sizer(512, {"multisub": 3})
+    windows = prepare.align_example(
+        text,
+        (),
+        1_000,
+        24,
+        prompt_labels=["email"],
+        input_sizer=sizer,
+    )
+    assert [len(window.tokens) for window in windows] == [169, 31]
+    assert all(sizer.fits(window.tokens, ["email"]) for window in windows)
+
+
+def test_token_boundary_moves_before_an_entity_instead_of_splitting_it() -> None:
+    words = [f"w{index}" for index in range(12)]
+    text = " ".join(words)
+    start = text.index("w4")
+    end = text.index("w6") + len("w6")
+    windows = prepare.align_example(
+        text,
+        [("account_number", start, end)],
+        100,
+        24,
+        prompt_labels=["account_number"],
+        input_sizer=input_sizer(10),
+    )
+    assert (windows[0].word_start, windows[0].word_end) == (0, 4)
+    assert windows[0].ner == ()
+    assert windows[1].ner == ((0, 2, "account_number"),)
+
+
+def test_token_windows_preserve_every_entity_label_and_exact_offset() -> None:
+    words = [f"token{index}" for index in range(40)]
+    text = " ".join(words)
+    entities = [
+        ("first_name", text.index("token3"), text.index("token3") + len("token3")),
+        (
+            "account_number",
+            text.index("token18"),
+            text.index("token20") + len("token20"),
+        ),
+        ("ipv4", text.index("token35"), text.index("token35") + len("token35")),
+    ]
+    windows = prepare.align_example(
+        text,
+        entities,
+        100,
+        24,
+        prompt_labels=["first_name", "account_number", "ipv4"],
+        input_sizer=input_sizer(24),
+    )
+    recovered = []
+    words_with_offsets = whitespace_words(text)
+    for window in windows:
+        original_offset = words_with_offsets[window.word_start][0]
+        recovered.extend(
+            (label, original_offset + start, original_offset + end)
+            for label, start, end in window.char_entities
+        )
+    assert sorted(recovered) == sorted(entities)
+
+
+def test_synthetic_other_numeric_offset_survives_token_windowing() -> None:
+    words = [f"context{index}" for index in range(80)]
+    words[43] = "INV-000123"
+    text = " ".join(words)
+    start = text.index("INV-000123")
+    entity = (OTHER_NUMERIC, start, start + len("INV-000123"))
+    windows = prepare.align_example(
+        text,
+        [entity],
+        384,
+        24,
+        prompt_labels=CONFIG.training_labels,
+        input_sizer=input_sizer(130),
+    )
+    matches = [
+        (window, item)
+        for window in windows
+        for item in window.char_entities
+        if item[0] == OTHER_NUMERIC
+    ]
+    assert len(windows) > 1
+    [(window, (label, local_start, local_end))] = matches
+    assert label == OTHER_NUMERIC
+    assert window.text[local_start:local_end] == "INV-000123"
+
+
+def test_token_windowing_is_deterministic() -> None:
+    text = " ".join(["multisub"] * 300)
+    kwargs = {
+        "prompt_labels": ["email", "account_number"],
+        "input_sizer": input_sizer(64, {"multisub": 2}),
+    }
+    assert prepare.align_example(text, (), 384, 24, **kwargs) == prepare.align_example(
+        text, (), 384, 24, **kwargs
+    )
+
+
+def test_unfit_entity_is_rejected_with_an_aggregate_reason(tmp_path: Path) -> None:
+    row = {
+        "uid": "unfit",
+        "text": "huge",
+        "spans": str([{"start": 0, "end": 4, "label": "account_number"}]),
+    }
+    manifest = build(
+        tmp_path,
+        "out",
+        [row],
+        synthetic_counts=(0, 0),
+        input_sizer=input_sizer(150, {"huge": 100}),
+    )
+    assert manifest["sources"]["nemotron_train"]["rejected"] == {"entity_exceeds_subword_budget": 1}
+    assert manifest["records"] == {"train": 0, "dev": 0, "by_kind": {}}
 
 
 def test_gliner_record_shape_and_prompts() -> None:

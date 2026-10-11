@@ -34,12 +34,15 @@ from scripts.gliner_numeric_common import (
     OTHER_NUMERIC,
     PINNED_MODEL_ID,
     PINNED_MODEL_REVISION,
+    TOKEN_WINDOWING_METHOD,
+    GlinerInputSizer,
     NumericConfig,
     NumericExperimentError,
     check_output_path,
     load_config,
     package_version,
     require_training_packages,
+    resolve_tokenizer_sequence_limit,
     verify_architecture,
     verify_snapshot_revision,
 )
@@ -52,9 +55,6 @@ RUN_IDENTITY_FILE = "run_identity.json"
 RUN_RECORD_FILE = "training_run.json"
 MODEL_KEYS = ("tokenized_text", "ner", "ner_labels")
 _SKIPPED_BATCH_PREFIX = "Skipping batch due to"
-# Hugging Face uses extremely large integers when a tokenizer has no declared
-# maximum. Real encoder limits are far below this guard.
-MAX_TRUSTWORTHY_SEQUENCE_LIMIT = 100_000
 
 
 # --- Dataset ----------------------------------------------------------------------------
@@ -79,6 +79,15 @@ def load_manifest(dataset_dir: Path, config: NumericConfig) -> dict[str, Any]:
         expected = manifest.get("files", {}).get(name, {}).get("sha256")
         if not expected or sha256_file(dataset_dir / name) != expected:
             raise NumericExperimentError(f"dataset file {name} does not match its manifest")
+    windowing = manifest.get("format", {}).get("subword_windowing", {})
+    if (
+        windowing.get("method") != TOKEN_WINDOWING_METHOD
+        or not isinstance(windowing.get("effective_limit"), int)
+        or windowing["effective_limit"] < 1
+    ):
+        raise NumericExperimentError(
+            "dataset was not built with the required tokenizer-aware windowing; rebuild it"
+        )
     return manifest
 
 
@@ -326,29 +335,6 @@ def parameter_counts(model: Any) -> dict[str, int]:
     return {"total": total, "trainable": trainable}
 
 
-def resolve_tokenizer_sequence_limit(tokenizer: Any, text_encoder: Any) -> int:
-    """Resolve a finite subword limit from the tokenizer and loaded encoder."""
-
-    def valid(value: object) -> bool:
-        return (
-            isinstance(value, int)
-            and not isinstance(value, bool)
-            and 0 < value < MAX_TRUSTWORTHY_SEQUENCE_LIMIT
-        )
-
-    tokenizer_limit = getattr(tokenizer, "model_max_length", None)
-    encoder_config = getattr(text_encoder, "config", None)
-    encoder_limit = getattr(encoder_config, "max_position_embeddings", None)
-    limits = [int(value) for value in (tokenizer_limit, encoder_limit) if valid(value)]
-    if not limits:
-        raise NumericExperimentError(
-            "no trustworthy finite subword-token limit: tokenizer.model_max_length "
-            "and text_encoder.config.max_position_embeddings are missing, invalid, "
-            "or sentinel values"
-        )
-    return min(limits)
-
-
 def drop_subword_overflow(
     model: Any, records: list[dict[str, Any]]
 ) -> tuple[list[dict[str, Any]], int, int]:
@@ -358,13 +344,10 @@ def drop_subword_overflow(
     components = model._get_freezable_components()
     text_encoder = components.get("text_encoder") if isinstance(components, Mapping) else None
     limit = resolve_tokenizer_sequence_limit(tokenizer, text_encoder)
+    sizer = GlinerInputSizer(processor, limit)
     kept = []
     for record in records:
-        words, _ = processor.prepare_inputs([record["tokenized_text"]], [record["ner_labels"]])
-        encoded = tokenizer(
-            words[0], is_split_into_words=True, add_special_tokens=False, truncation=False
-        )
-        if len(encoded["input_ids"]) <= limit:
+        if sizer.fits(record["tokenized_text"], record["ner_labels"]):
             kept.append(record)
     return kept, len(records) - len(kept), limit
 
@@ -476,8 +459,13 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         args.dataset_dir / "dev.jsonl", labels, max_width, settings["limit_dev_examples"]
     )
     overflow: dict[str, Any] = {}
+    built_token_limit = int(manifest["format"]["subword_windowing"]["effective_limit"])
     for name, rows in (("train", train_records), ("dev", dev_records)):
         kept, dropped, limit = drop_subword_overflow(model, rows)
+        if limit != built_token_limit:
+            raise NumericExperimentError(
+                "loaded model token limit differs from the dataset builder limit; rebuild it"
+            )
         overflow[name] = {"examples": len(rows), "dropped": dropped, "token_limit": limit}
         if dropped / len(rows) > float(config.training["max_subword_overflow_fraction"]):
             raise NumericExperimentError(f"too many {name} examples exceed the token limit")

@@ -15,7 +15,7 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -38,6 +38,10 @@ PROTOCOL_MAX_WIDTH = 24
 PROTOCOL_THRESHOLDS = (0.3, 0.7)
 MODEL_MAX_WORDS = 384
 FREEZABLE_COMPONENTS = frozenset({"text_encoder"})
+TOKEN_WINDOWING_METHOD = "gliner_0.2.29_prepare_inputs_then_tokenize_without_truncation"
+# Hugging Face tokenizers use enormous integers when no model limit is known.
+# Real encoder context windows are far below this fail-closed guard.
+MAX_TRUSTWORTHY_SEQUENCE_LIMIT = 100_000
 
 # Frozen benchmark rows. Argilla publishes one split, and it is the benchmark.
 FORBIDDEN_TRAINING_SPLITS: Mapping[str, frozenset[str] | None] = {
@@ -88,6 +92,75 @@ _LABEL_PATTERN = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 
 class NumericExperimentError(ValueError):
     """Experiment inputs are unsafe or inconsistent. Messages contain no source data."""
+
+
+def _valid_sequence_limit(value: object) -> bool:
+    return (
+        isinstance(value, int)
+        and not isinstance(value, bool)
+        and 0 < value < MAX_TRUSTWORTHY_SEQUENCE_LIMIT
+    )
+
+
+def resolve_tokenizer_sequence_limit(tokenizer: Any, text_encoder: Any) -> int:
+    """Resolve the strictest finite subword limit from tokenizer and encoder."""
+    tokenizer_limit = getattr(tokenizer, "model_max_length", None)
+    encoder_config = getattr(text_encoder, "config", text_encoder)
+    encoder_limit = getattr(encoder_config, "max_position_embeddings", None)
+    limits = [
+        cast(int, value)
+        for value in (tokenizer_limit, encoder_limit)
+        if _valid_sequence_limit(value)
+    ]
+    if not limits:
+        raise NumericExperimentError(
+            "no trustworthy finite subword-token limit: tokenizer.model_max_length "
+            "and text_encoder.config.max_position_embeddings are missing, invalid, "
+            "or sentinel values"
+        )
+    return min(limits)
+
+
+@dataclass(frozen=True)
+class GlinerInputSizer:
+    """Count inputs with GLiNER 0.2.29's processor and tokenizer semantics."""
+
+    processor: Any
+    limit: int
+    tokenizer_model_max_length: object = None
+    encoder_max_position_embeddings: object = None
+
+    def token_count(self, words: Sequence[str], labels: Sequence[str]) -> int:
+        # UniEncoderSpanProcessor.tokenize_inputs first calls prepare_inputs,
+        # then tokenizes the resulting pretokenized words with special tokens.
+        prepared, _ = self.processor.prepare_inputs([list(words)], [list(labels)])
+        encoded = self.processor.transformer_tokenizer(
+            prepared[0],
+            is_split_into_words=True,
+            truncation=False,
+        )
+        input_ids = encoded.get("input_ids")
+        if not isinstance(input_ids, list) or any(
+            isinstance(token_id, bool) or not isinstance(token_id, int) for token_id in input_ids
+        ):
+            raise NumericExperimentError("tokenizer returned invalid input_ids during preflight")
+        return len(input_ids)
+
+    def fits(self, words: Sequence[str], labels: Sequence[str]) -> bool:
+        return self.token_count(words, labels) <= self.limit
+
+    def as_manifest(self) -> dict[str, object]:
+        def safe(value: object) -> int | str | None:
+            if value is None or _valid_sequence_limit(value):
+                return value  # type: ignore[return-value]
+            return "invalid_or_sentinel"
+
+        return {
+            "method": TOKEN_WINDOWING_METHOD,
+            "effective_limit": self.limit,
+            "tokenizer_model_max_length": safe(self.tokenizer_model_max_length),
+            "encoder_max_position_embeddings": safe(self.encoder_max_position_embeddings),
+        }
 
 
 def is_forbidden_split(dataset: str, split: str) -> bool:

@@ -47,12 +47,16 @@ from scripts.gliner_numeric_common import (
     OTHER_NUMERIC,
     REQUIRED_GLINER_VERSION,
     SOURCE_DATASETS,
+    GlinerInputSizer,
     NumericConfig,
     NumericExperimentError,
     check_output_path,
     is_forbidden_split,
     lf_sha256,
     load_config,
+    package_version,
+    resolve_tokenizer_sequence_limit,
+    verify_snapshot_revision,
 )
 from scripts.gliner_predictions import DEV_SELECTION_SEED, select_dev_indices
 from scripts.nemotron_pii import (
@@ -100,6 +104,8 @@ class Window:
     ner: tuple[tuple[int, int, str], ...]
     text: str
     char_entities: tuple[Entity, ...]
+    word_start: int
+    word_end: int
 
 
 def plan_windows(
@@ -123,8 +129,72 @@ def plan_windows(
     return windows
 
 
+def plan_token_windows(
+    tokens: Sequence[str],
+    word_entities: Sequence[tuple[int, int, str]],
+    max_words: int,
+    prompt_labels: Sequence[str] | Callable[[int], Sequence[str]],
+    input_sizer: GlinerInputSizer,
+) -> list[tuple[int, int]]:
+    """Largest exact-token windows that do not cut an entity."""
+    if not tokens:
+        labels = prompt_labels(0) if callable(prompt_labels) else prompt_labels
+        if not input_sizer.fits((), labels):
+            raise Rejection("prompt_exceeds_subword_budget")
+        return [(0, 0)]
+
+    windows: list[tuple[int, int]] = []
+    start = 0
+    while start < len(tokens):
+        labels = prompt_labels(len(windows)) if callable(prompt_labels) else prompt_labels
+        if not input_sizer.fits((), labels):
+            raise Rejection("prompt_exceeds_subword_budget")
+        upper = min(start + max_words, len(tokens))
+        legal_ends = [
+            end
+            for end in range(start + 1, upper + 1)
+            if not any(first < end <= last for first, last, _ in word_entities)
+        ]
+        if not legal_ends:
+            raise Rejection("entity_wider_than_window")
+
+        finish: int | None
+        if input_sizer.fits(tokens[start : legal_ends[-1]], labels):
+            finish = legal_ends[-1]
+        else:
+            low, high = 0, len(legal_ends) - 1
+            finish = None
+            while low <= high:
+                middle = (low + high) // 2
+                candidate = legal_ends[middle]
+                if input_sizer.fits(tokens[start:candidate], labels):
+                    finish = candidate
+                    low = middle + 1
+                else:
+                    high = middle - 1
+            if finish is None:
+                starts_with_entity = any(first == start for first, _, _ in word_entities)
+                reason = (
+                    "entity_exceeds_subword_budget"
+                    if starts_with_entity
+                    else "word_exceeds_subword_budget"
+                )
+                raise Rejection(reason)
+
+        windows.append((start, finish))
+        start = finish
+    return windows
+
+
 def align_example(
-    text: str, entities: Sequence[Entity], max_words: int, max_width: int
+    text: str,
+    entities: Sequence[Entity],
+    max_words: int,
+    max_width: int,
+    *,
+    prompt_labels: Sequence[str] | Callable[[int], Sequence[str]] = (),
+    input_sizer: GlinerInputSizer | None = None,
+    planned_ranges: Sequence[tuple[int, int]] | None = None,
 ) -> list[Window]:
     """Map char-offset entities onto whole model words without moving any boundary."""
     if not isinstance(text, str):
@@ -142,10 +212,24 @@ def align_example(
     first_word = {start: index for index, (start, _) in enumerate(words)}
     last_word = {end: index for index, (_, end) in enumerate(words)}
     word_entities = [(first_word[start], last_word[end], label) for label, start, end in unique]
+    tokens = tuple(text[start:end] for start, end in words)
+    if planned_ranges is not None:
+        ranges = list(planned_ranges)
+        if not ranges or ranges[0][0] != 0 or ranges[-1][1] != len(words):
+            raise NumericExperimentError("stored window plan does not cover the source example")
+        if any(
+            left_end != right_start
+            for (_, left_end), (right_start, _) in zip(ranges, ranges[1:], strict=False)
+        ):
+            raise NumericExperimentError("stored window plan is not contiguous")
+    elif input_sizer is not None:
+        ranges = plan_token_windows(tokens, word_entities, max_words, prompt_labels, input_sizer)
+    else:
+        ranges = plan_windows(len(words), word_entities, max_words)
     windows = []
-    for begin, finish in plan_windows(len(words), word_entities, max_words):
+    for begin, finish in ranges:
         if begin == finish:
-            windows.append(Window((), (), "", ()))
+            windows.append(Window((), (), "", (), begin, finish))
             continue
         offset, stop = words[begin][0], words[finish - 1][1]
         inside = [item for item in word_entities if begin <= item[0] and item[1] < finish]
@@ -156,10 +240,12 @@ def align_example(
         )
         windows.append(
             Window(
-                tokens=tuple(text[start:end] for start, end in words[begin:finish]),
+                tokens=tokens[begin:finish],
                 ner=ner,
                 text=text[offset:stop],
                 char_entities=char_entities,
+                word_start=begin,
+                word_end=finish,
             )
         )
     return windows
@@ -592,6 +678,12 @@ def _shuffled_labels(labels: Sequence[str], seed: int, key: str) -> list[str]:
     return ordered
 
 
+def _window_label_order(
+    labels: Sequence[str], seed: int, prefix: str
+) -> Callable[[int], Sequence[str]]:
+    return lambda window_index: _shuffled_labels(labels, seed, f"{prefix}:{window_index}")
+
+
 def gliner_record(
     window: Window,
     prompt_labels: Sequence[str],
@@ -600,11 +692,12 @@ def gliner_record(
     source: str,
     kind: str,
     group: str,
+    label_key: str | None = None,
 ) -> dict[str, Any]:
     return {
         "tokenized_text": list(window.tokens),
         "ner": [[first, last, label] for first, last, label in window.ner],
-        "ner_labels": _shuffled_labels(prompt_labels, seed, key),
+        "ner_labels": _shuffled_labels(prompt_labels, seed, label_key or key),
         "source": source,
         "kind": kind,
         "group": hashlib.sha256(group.encode("utf-8")).hexdigest()[:16],
@@ -737,6 +830,7 @@ class _Scan:
     keys: list[str]
     reserved: bool
     windows: int
+    ranges: tuple[tuple[int, int], ...]
     # Per window: (focus-label mentions, all mentions).
     mentions: list[tuple[int, int]]
 
@@ -770,6 +864,58 @@ def _iter_rows(spec: SourceSpec, limit: int | None) -> Iterator[tuple[int, Mappi
         yield row_index, record
 
 
+def load_pinned_input_sizer(config: NumericConfig) -> GlinerInputSizer:
+    """Load only the pinned GLiNER config and tokenizer, never model weights."""
+    if package_version("gliner") != REQUIRED_GLINER_VERSION:
+        raise NumericExperimentError(
+            f"dataset preparation requires gliner=={REQUIRED_GLINER_VERSION}"
+        )
+
+    from gliner.config import GLiNERConfig
+    from gliner.data_processing.processor import UniEncoderSpanProcessor
+    from gliner.model import BaseGLiNER
+    from huggingface_hub import snapshot_download
+    from transformers import AutoTokenizer
+
+    base = config.raw["base_model"]
+    snapshot = Path(
+        snapshot_download(
+            repo_id=str(base["model_id"]),
+            revision=str(base["revision"]),
+            allow_patterns=[
+                "gliner_config.json",
+                "tokenizer.json",
+                "tokenizer_config.json",
+                "special_tokens_map.json",
+                "added_tokens.json",
+                "spm.model",
+            ],
+        )
+    )
+    verify_snapshot_revision(snapshot, str(base["revision"]))
+    raw = json.loads((snapshot / "gliner_config.json").read_text(encoding="utf-8"))
+    for key, expected in (
+        ("model_name", base["encoder"]),
+        ("span_mode", base["span_mode"]),
+        ("words_splitter_type", base["words_splitter_type"]),
+    ):
+        if raw.get(key) != expected:
+            raise NumericExperimentError(f"pinned tokenizer config {key} differs from experiment")
+
+    gliner_config = GLiNERConfig(**raw)
+    tokenizer = AutoTokenizer.from_pretrained(snapshot, local_files_only=True)
+    tokenizer = BaseGLiNER._set_tokenizer_spec_tokens(tokenizer)
+    processor = UniEncoderSpanProcessor(gliner_config, tokenizer, words_splitter=None)
+    encoder_config = gliner_config.encoder_config
+    limit = resolve_tokenizer_sequence_limit(tokenizer, encoder_config)
+    return GlinerInputSizer(
+        processor=processor,
+        limit=limit,
+        tokenizer_model_max_length=getattr(tokenizer, "model_max_length", None),
+        encoder_max_position_embeddings=getattr(encoder_config, "max_position_embeddings", None),
+    )
+
+
 def build_dataset(
     config: NumericConfig,
     sources: Sequence[SourceSpec],
@@ -778,6 +924,7 @@ def build_dataset(
     limit_source_rows: int | None = None,
     synthetic_counts: tuple[int, int] | None = None,
     ontology: Mapping[str, str] | None = None,
+    input_sizer: GlinerInputSizer | None = None,
 ) -> dict[str, Any]:
     """Two passes: scan and group, then write shuffled train/dev files and a manifest."""
     check_output_path(output_dir)
@@ -790,6 +937,7 @@ def build_dataset(
     if ood_enabled and not benchmark_paths:
         raise NumericExperimentError("OOD training sources require --benchmark-normalized")
     ontology = load_ontology() if ontology is None else ontology
+    input_sizer = load_pinned_input_sizer(config) if input_sizer is None else input_sizer
     data = config.data
     seed, max_words, max_width = config.seed, int(data["max_words"]), int(data["max_width"])
     focus = set(config.focus_labels)
@@ -816,7 +964,18 @@ def build_dataset(
             stats["rows_read"] += 1
             try:
                 example = _example(spec, record, row_index, config, ontology)
-                windows = align_example(example.text, example.entities, max_words, max_width)
+                windows = align_example(
+                    example.text,
+                    example.entities,
+                    max_words,
+                    max_width,
+                    prompt_labels=_window_label_order(
+                        example.prompt_labels,
+                        seed,
+                        f"{spec.name}:{row_index}",
+                    ),
+                    input_sizer=input_sizer,
+                )
             except Rejection as rejection:
                 stats["rejected"][rejection.reason] += 1
                 continue
@@ -837,6 +996,7 @@ def build_dataset(
                     keys=[f"text:{key}"] + ([example.stable_id] if example.stable_id else []),
                     reserved=row_index in reserved_rows,
                     windows=len(windows),
+                    ranges=tuple((window.word_start, window.word_end) for window in windows),
                     mentions=[
                         (sum(label in focus for _, _, label in w.ner), len(w.ner)) for w in windows
                     ],
@@ -855,13 +1015,47 @@ def build_dataset(
         (scan.source, scan.row_index): (split, group)
         for scan, split, group in zip(scans, splits, groups, strict=True)
     }
+    scan_by_row = {(scan.source, scan.row_index): scan for scan in scans}
 
     hard = config.data["hard_negatives"]
     train_count, dev_count = synthetic_counts or (int(hard["train_count"]), int(hard["dev_count"]))
-    synthetic_train = generate_hard_negatives(train_count, seed, "train", hard)
-    train_texts = {text_key(example.text) for example in synthetic_train}
-    synthetic_dev_all = generate_hard_negatives(dev_count, seed, "dev", hard)
-    synthetic_dev = [ex for ex in synthetic_dev_all if text_key(ex.text) not in train_texts]
+    generated_train = generate_hard_negatives(train_count, seed, "train", hard)
+    generated_dev = generate_hard_negatives(dev_count, seed, "dev", hard)
+    synthetic_rejected: dict[str, Counter[str]] = {
+        "train": Counter(),
+        "dev": Counter(),
+    }
+
+    def prepare_synthetic(
+        split: str, examples: Sequence[SyntheticExample]
+    ) -> list[tuple[int, SyntheticExample, list[Window]]]:
+        prepared = []
+        for index, synthetic in enumerate(examples):
+            try:
+                windows = align_example(
+                    synthetic.text,
+                    synthetic.entities,
+                    max_words,
+                    max_width,
+                    prompt_labels=_window_label_order(
+                        config.training_labels,
+                        seed,
+                        f"synthetic:{split}:{index}",
+                    ),
+                    input_sizer=input_sizer,
+                )
+            except Rejection as rejection:
+                synthetic_rejected[split][rejection.reason] += 1
+                continue
+            prepared.append((index, synthetic, windows))
+        return prepared
+
+    synthetic_train = prepare_synthetic("train", generated_train)
+    train_texts = {text_key(example.text) for _, example, _ in synthetic_train}
+    synthetic_dev_all = prepare_synthetic("dev", generated_dev)
+    synthetic_dev = [
+        item for item in synthetic_dev_all if text_key(item[1].text) not in train_texts
+    ]
 
     train_scans = [scan for scan, split in zip(scans, splits, strict=True) if split == "train"]
     natural_train = sum(scan.windows for scan in train_scans)
@@ -879,7 +1073,7 @@ def build_dataset(
         focus_windows=focus_windows,
         synthetic=[
             (sum(label in focus_or_other for label, _, _ in ex.entities), len(ex.entities))
-            for ex in synthetic_train
+            for _, ex, _ in synthetic_train
         ],
         factor=int(balancing["focus_oversample_factor"]),
         max_share=float(balancing["max_focus_share"]),
@@ -930,7 +1124,13 @@ def build_dataset(
                 continue
             split, group = placed
             example = _example(spec, record, row_index, config, ontology)
-            windows = align_example(example.text, example.entities, max_words, max_width)
+            windows = align_example(
+                example.text,
+                example.entities,
+                max_words,
+                max_width,
+                planned_ranges=scan_by_row[(spec.name, row_index)].ranges,
+            )
             for window_index, window in enumerate(windows):
                 key = f"{spec.name}:{row_index}:{window_index}"
                 emit(
@@ -959,6 +1159,7 @@ def build_dataset(
                             spec.name,
                             "oversampled",
                             group,
+                            label_key=key,
                         ),
                         window,
                         copy_key,
@@ -967,25 +1168,23 @@ def build_dataset(
     families: dict[str, Counter[str]] = {"train": Counter(), "dev": Counter()}
     card_luhn: Counter[str] = Counter()
     for split, examples in (("train", synthetic_train), ("dev", synthetic_dev)):
-        for index, synthetic in enumerate(examples):
-            windows = align_example(synthetic.text, synthetic.entities, max_words, max_width)
-            if len(windows) != 1 or len(windows[0].ner) != len(synthetic.entities):
-                raise NumericExperimentError("synthetic example did not align exactly")
-            key = f"synthetic:{split}:{index}"
-            emit(
-                split,
-                gliner_record(
-                    windows[0],
-                    config.training_labels,
-                    seed,
+        for index, synthetic, windows in examples:
+            for window_index, window in enumerate(windows):
+                key = f"synthetic:{split}:{index}:{window_index}"
+                emit(
+                    split,
+                    gliner_record(
+                        window,
+                        config.training_labels,
+                        seed,
+                        key,
+                        "synthetic",
+                        "synthetic",
+                        f"synthetic:{split}:{index}",
+                    ),
+                    window,
                     key,
-                    "synthetic",
-                    "synthetic",
-                    key,
-                ),
-                windows[0],
-                key,
-            )
+                )
             families[split][synthetic.family] += 1
             if synthetic.card_shaped_luhn is not None:
                 card_luhn[
@@ -1034,6 +1233,7 @@ def build_dataset(
             "word_pattern": WHITESPACE_WORD_PATTERN.pattern,
             "max_words": max_words,
             "max_width": max_width,
+            "subword_windowing": input_sizer.as_manifest(),
         },
         "sources": source_stats,
         "forbidden_training_splits": {
@@ -1086,6 +1286,10 @@ def build_dataset(
             "train_families": dict(sorted(families["train"].items())),
             "dev_families": dict(sorted(families["dev"].items())),
             "dev_dropped_as_train_duplicates": len(synthetic_dev_all) - len(synthetic_dev),
+            "rejected": {
+                split: dict(sorted(reasons.items()))
+                for split, reasons in synthetic_rejected.items()
+            },
             "card_shaped_luhn": dict(sorted(card_luhn.items())),
             "labeling": "context only; Luhn never decides a label",
         },

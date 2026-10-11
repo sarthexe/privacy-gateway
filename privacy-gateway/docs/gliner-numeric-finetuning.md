@@ -185,9 +185,15 @@ binds. Read the full counts from that run's manifest.
   and verifies the train and dev file hashes;
 - validates every record (word bounds, width ≤ 24, labels in the 56-label
   vocabulary, each `ner` label present in `ner_labels`);
-- runs the real tokenizer over prompt plus words, and drops examples that would
-  exceed the tokenizer's `model_max_length` rather than letting gliner truncate them
-  silently. Above 1% dropped, the run stops;
+- resolves the subword-token limit from the tokenizer's finite, non-sentinel
+  `model_max_length` and the loaded text encoder's
+  `config.max_position_embeddings`. If both are valid, the more restrictive
+  value is used; if the tokenizer omits its limit or exposes Hugging Face's
+  large sentinel, the encoder limit is used. The run fails closed when neither
+  is trustworthy. GLiNER's word-level `config.max_len` is never substituted;
+- runs the real tokenizer over prompt plus words without truncation, drops
+  examples that exceed that resolved subword limit, and counts them. Above 1%
+  dropped, the run stops;
 - writes `run_identity.json`, `checkpoints/checkpoint-N/`, `final_model/`
   (with `numeric_finetune_lineage.json`, `production_ready: false`), and
   `training_run.json` (status, package versions, hardware, parameter counts,

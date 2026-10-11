@@ -200,6 +200,74 @@ def test_freezing_is_strict() -> None:
         train.freeze_strictly(Model(), ["decoder"])
 
 
+def test_sequence_limit_uses_encoder_when_tokenizer_limit_is_missing() -> None:
+    tokenizer = SimpleNamespace()
+    encoder = SimpleNamespace(config=SimpleNamespace(max_position_embeddings=512))
+    assert train.resolve_tokenizer_sequence_limit(tokenizer, encoder) == 512
+
+
+def test_sequence_limit_ignores_hugging_face_sentinel() -> None:
+    tokenizer = SimpleNamespace(model_max_length=10**30)
+    encoder = SimpleNamespace(config=SimpleNamespace(max_position_embeddings=512))
+    assert train.resolve_tokenizer_sequence_limit(tokenizer, encoder) == 512
+
+
+def test_sequence_limit_accepts_valid_tokenizer_limit() -> None:
+    tokenizer = SimpleNamespace(model_max_length=384)
+    assert train.resolve_tokenizer_sequence_limit(tokenizer, None) == 384
+
+
+def test_sequence_limit_uses_more_restrictive_valid_limit() -> None:
+    tokenizer = SimpleNamespace(model_max_length=1_024)
+    encoder = SimpleNamespace(config=SimpleNamespace(max_position_embeddings=512))
+    assert train.resolve_tokenizer_sequence_limit(tokenizer, encoder) == 512
+
+
+def test_sequence_limit_falls_back_from_invalid_tokenizer_value() -> None:
+    tokenizer = SimpleNamespace(model_max_length="512")
+    encoder = SimpleNamespace(config=SimpleNamespace(max_position_embeddings=768))
+    assert train.resolve_tokenizer_sequence_limit(tokenizer, encoder) == 768
+
+
+def test_sequence_limit_fails_when_neither_source_is_trustworthy() -> None:
+    tokenizer = SimpleNamespace(model_max_length=10**30)
+    encoder = SimpleNamespace(config=SimpleNamespace(max_position_embeddings=10**30))
+    with pytest.raises(NumericExperimentError, match="no trustworthy finite subword-token limit"):
+        train.resolve_tokenizer_sequence_limit(tokenizer, encoder)
+
+
+def test_overflow_preflight_uses_encoder_limit_without_truncating() -> None:
+    calls: list[dict[str, Any]] = []
+
+    class Tokenizer:
+        model_max_length = 10**30
+
+        def __call__(self, words: list[str], **kwargs: Any) -> dict[str, list[int]]:
+            calls.append(kwargs)
+            return {"input_ids": list(range(len(words)))}
+
+    class Processor:
+        transformer_tokenizer = Tokenizer()
+
+        @staticmethod
+        def prepare_inputs(
+            texts: list[list[str]], labels: list[list[str]]
+        ) -> tuple[list[list[str]], list[int]]:
+            return texts, [len(labels[0])]
+
+    encoder = SimpleNamespace(config=SimpleNamespace(max_position_embeddings=2))
+    model = SimpleNamespace(
+        data_processor=Processor(),
+        _get_freezable_components=lambda: {"text_encoder": encoder},
+    )
+    short = {"tokenized_text": ["one"], "ner_labels": ["email"]}
+    long = {"tokenized_text": ["one", "two", "three"], "ner_labels": ["email"]}
+    kept, dropped, limit = train.drop_subword_overflow(model, [short, long])
+    assert kept == [short]
+    assert (dropped, limit) == (1, 2)
+    assert calls and all(call["truncation"] is False for call in calls)
+
+
 # --- Settings ----------------------------------------------------------------------------
 
 

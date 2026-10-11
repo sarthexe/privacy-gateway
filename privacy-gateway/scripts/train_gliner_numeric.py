@@ -52,6 +52,9 @@ RUN_IDENTITY_FILE = "run_identity.json"
 RUN_RECORD_FILE = "training_run.json"
 MODEL_KEYS = ("tokenized_text", "ner", "ner_labels")
 _SKIPPED_BATCH_PREFIX = "Skipping batch due to"
+# Hugging Face uses extremely large integers when a tokenizer has no declared
+# maximum. Real encoder limits are far below this guard.
+MAX_TRUSTWORTHY_SEQUENCE_LIMIT = 100_000
 
 
 # --- Dataset ----------------------------------------------------------------------------
@@ -323,15 +326,38 @@ def parameter_counts(model: Any) -> dict[str, int]:
     return {"total": total, "trainable": trainable}
 
 
+def resolve_tokenizer_sequence_limit(tokenizer: Any, text_encoder: Any) -> int:
+    """Resolve a finite subword limit from the tokenizer and loaded encoder."""
+
+    def valid(value: object) -> bool:
+        return (
+            isinstance(value, int)
+            and not isinstance(value, bool)
+            and 0 < value < MAX_TRUSTWORTHY_SEQUENCE_LIMIT
+        )
+
+    tokenizer_limit = getattr(tokenizer, "model_max_length", None)
+    encoder_config = getattr(text_encoder, "config", None)
+    encoder_limit = getattr(encoder_config, "max_position_embeddings", None)
+    limits = [int(value) for value in (tokenizer_limit, encoder_limit) if valid(value)]
+    if not limits:
+        raise NumericExperimentError(
+            "no trustworthy finite subword-token limit: tokenizer.model_max_length "
+            "and text_encoder.config.max_position_embeddings are missing, invalid, "
+            "or sentinel values"
+        )
+    return min(limits)
+
+
 def drop_subword_overflow(
     model: Any, records: list[dict[str, Any]]
 ) -> tuple[list[dict[str, Any]], int, int]:
     """Drop examples whose prompt + words exceed the tokenizer limit (no truncation)."""
     processor = model.data_processor
     tokenizer = processor.transformer_tokenizer
-    limit = int(getattr(tokenizer, "model_max_length", 0) or 0)
-    if not 0 < limit < 100_000:
-        raise NumericExperimentError("tokenizer has no usable model_max_length")
+    components = model._get_freezable_components()
+    text_encoder = components.get("text_encoder") if isinstance(components, Mapping) else None
+    limit = resolve_tokenizer_sequence_limit(tokenizer, text_encoder)
     kept = []
     for record in records:
         words, _ = processor.prepare_inputs([record["tokenized_text"]], [record["ner_labels"]])

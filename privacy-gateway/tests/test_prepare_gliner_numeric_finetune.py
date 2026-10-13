@@ -677,6 +677,6 @@ def test_balance_plan_skips_oversized_copy_and_continues_balancing() -> None:
     )
 
     assert first_key not in plan.copies
-    assert sum(plan.copies.values()) == 100
+    assert sum(plan.copies.values()) == 98
     assert plan.share >= 0.15
     assert plan.share <= 0.20

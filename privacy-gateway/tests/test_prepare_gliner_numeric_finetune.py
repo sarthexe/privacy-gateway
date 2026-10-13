@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+
 import copy
 import json
 import re
@@ -648,3 +650,33 @@ def test_threshold_selection_rows_are_reserved(tmp_path: Path) -> None:
     unreserved = config_with(data__reserve_threshold_selection_subset=False)
     other = build(tmp_path, "other", rows, config=unreserved)
     assert "reserved" not in other["split"]["examples"]
+
+
+
+def test_balance_plan_skips_oversized_copy_and_continues_balancing() -> None:
+    seed = 1
+    keys = [f"small-{index}" for index in range(50)] + ["large-window"]
+    first_key = min(
+        keys,
+        key=lambda key: __import__("hashlib").sha256(
+            f"{seed}|copy|{key}".encode()
+        ).digest(),
+    )
+    small = [(key, 1, 5) for key in keys if key != first_key]
+    large = (first_key, 100, 100)
+    windows = [large, *small]
+
+    plan = prepare.balance_plan(
+        natural_focus=10,
+        natural_total=100,
+        focus_windows=windows,
+        synthetic=[],
+        factor=3,
+        max_share=0.20,
+        seed=seed,
+    )
+
+    assert first_key not in plan.copies
+    assert sum(plan.copies.values()) == 100
+    assert plan.share >= 0.15
+    assert plan.share <= 0.20

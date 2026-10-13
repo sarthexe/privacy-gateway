@@ -814,7 +814,9 @@ def balance_plan(
     for _ in range(factor - 1):
         for key, window_focus, window_total in ranked:
             if (focus + window_focus) / (total + window_total) > max_share:
-                return BalancePlan(copies, len(kept), focus, total)
+                # Skip this window's copy, but keep considering smaller windows.
+                # Returning here can prematurely stop balancing below min_focus_share.
+                continue
             copies[key] = copies.get(key, 0) + 1
             focus, total = focus + window_focus, total + window_total
     return BalancePlan(copies, len(kept), focus, total)
